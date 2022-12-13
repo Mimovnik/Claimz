@@ -5,6 +5,7 @@ import org.bukkit.Particle;
 import org.bukkit.World;
 
 import static org.bukkit.Particle.ELECTRIC_SPARK;
+import static org.bukkit.Particle.SONIC_BOOM;
 
 public class Claim {
     private int minX, maxX, minY, maxY, minZ, maxZ;
@@ -23,7 +24,8 @@ public class Claim {
     }
 
     public void display() {
-        Particle particle = ELECTRIC_SPARK;
+        Particle particle = SONIC_BOOM;
+
         // X edges
         for (int x = minX; x < maxX; x++) {
             world.spawnParticle(particle, x, minY, minZ, 10);

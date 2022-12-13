@@ -20,7 +20,7 @@ import static java.util.concurrent.TimeUnit.*;
 
 public class ClaimEditor implements Listener {
     private Location firstCorner, secondCorner;
-    private Boolean isHoldingEditorTool;
+    private boolean isHoldingEditorTool = false;
     private Material editorTool = Material.STICK;
     private Claim claim;
     private ScheduledExecutorService particleRenderer = Executors.newSingleThreadScheduledExecutor();
