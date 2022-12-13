@@ -1,0 +1,6 @@
+name: Claimz
+version: '${project.version}'
+main: me.mimovnik.claimz.Claimz
+api-version: 1.19
+authors: [ Mimovnik ]
+description: Allow players to claim land where you cannot be griefed.
