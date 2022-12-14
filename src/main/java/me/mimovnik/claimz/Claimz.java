@@ -22,6 +22,7 @@ public final class Claimz extends JavaPlugin {
     public void onEnable() {
         // Plugin startup logic
         getServer().getPluginManager().registerEvents(new ClaimEditor(claims),this);
+        getServer().getPluginManager().registerEvents(new ClaimGuard(claims), this);
     }
 
     @Override

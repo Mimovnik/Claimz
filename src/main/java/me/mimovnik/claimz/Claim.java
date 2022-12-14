@@ -62,4 +62,17 @@ public class Claim {
                 ", maxZ=" + maxZ +
                 '}';
     }
+
+    public Player getOwner() {
+        return owner;
+    }
+
+    public boolean contains(Location location) {
+        int x = location.getBlockX();
+        int y = location.getBlockY();
+        int z = location.getBlockZ();
+        return (x >= minX && x <= maxX &&
+                y >= minY && y <= maxY &&
+                z >= minZ && z <= maxZ);
+    }
 }
