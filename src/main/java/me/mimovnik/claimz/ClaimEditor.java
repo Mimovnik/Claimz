@@ -12,26 +12,29 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
-import static java.util.concurrent.TimeUnit.*;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class ClaimEditor implements Listener {
     private Location firstCorner, secondCorner;
     private boolean isHoldingEditorTool = false;
     private Material editorTool = Material.STICK;
-    private Claim claim;
+    private ArrayList<Claim> claims;
     private ScheduledExecutorService particleRenderer = Executors.newSingleThreadScheduledExecutor();
 
-    public ClaimEditor() {
-        particleRenderer.scheduleAtFixedRate(this::displayClaim, 0, 500, MILLISECONDS);
+    public ClaimEditor(ArrayList<Claim> claims) {
+        this.claims = claims;
+        particleRenderer.scheduleAtFixedRate(this::displayClaims, 0, 500, MILLISECONDS);
     }
 
-    private void displayClaim() {
-        if (claim != null && isHoldingEditorTool) {
-            claim.display();
+    private void displayClaims() {
+        if (isHoldingEditorTool) {
+            for (Claim claim : claims) {
+                claim.display();
+            }
         }
     }
 
@@ -73,8 +76,9 @@ public class ClaimEditor implements Listener {
                     } else {
                         secondCorner = block.getLocation();
                         player.sendMessage("Second Corner set to:" + block.getLocation());
-                        claim = new Claim(firstCorner, secondCorner, player.getWorld());
-                        player.sendMessage("Claim set to" + claim);
+                        Claim newClaim = new Claim(firstCorner, secondCorner, player.getWorld(), player);
+                        player.sendMessage("Claim set to" + newClaim);
+                        claims.add(newClaim);
                         firstCorner = null;
                         secondCorner = null;
                     }

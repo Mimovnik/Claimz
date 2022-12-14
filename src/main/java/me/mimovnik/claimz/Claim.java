@@ -3,15 +3,18 @@ package me.mimovnik.claimz;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 
-import static org.bukkit.Particle.*;
+import static org.bukkit.Particle.SONIC_BOOM;
 
 public class Claim {
     private int minX, maxX, minY, maxY, minZ, maxZ;
     private World world;
+    private Player owner;
 
-    public Claim(Location firstCorner, Location secondCorner, World world) {
+    public Claim(Location firstCorner, Location secondCorner, World world, Player owner) {
         this.world = world;
+        this.owner = owner;
         minX = Math.min(firstCorner.getBlockX(), secondCorner.getBlockX());
         maxX = Math.max(firstCorner.getBlockX(), secondCorner.getBlockX());
 
