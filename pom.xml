@@ -35,7 +35,7 @@
                 <configuration>
                     <serverVersion>1.19.2</serverVersion>
                     <createEula>true</createEula>
-                    <gui>true</gui>
+                    <gui>false</gui>
                 </configuration>
             </plugin>
             <plugin>

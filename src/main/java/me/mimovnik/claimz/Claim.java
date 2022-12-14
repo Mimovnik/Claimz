@@ -4,8 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
 
-import static org.bukkit.Particle.ELECTRIC_SPARK;
-import static org.bukkit.Particle.SONIC_BOOM;
+import static org.bukkit.Particle.*;
 
 public class Claim {
     private int minX, maxX, minY, maxY, minZ, maxZ;
@@ -25,27 +24,27 @@ public class Claim {
 
     public void display() {
         Particle particle = SONIC_BOOM;
-
+        int count = 1;
         // X edges
         for (int x = minX; x < maxX; x++) {
-            world.spawnParticle(particle, x, minY, minZ, 10);
-            world.spawnParticle(particle, x, minY, maxZ, 10);
-            world.spawnParticle(particle, x, maxY, minZ, 10);
-            world.spawnParticle(particle, x, maxY, maxZ, 10);
+            world.spawnParticle(particle, x, minY, minZ, count);
+            world.spawnParticle(particle, x, minY, maxZ, count);
+            world.spawnParticle(particle, x, maxY, minZ, count);
+            world.spawnParticle(particle, x, maxY, maxZ, count);
         }
         // Y edges
         for (int y = minY; y < maxY; y++) {
-            world.spawnParticle(particle, minX, y, minZ, 10);
-            world.spawnParticle(particle, minX, y, maxZ, 10);
-            world.spawnParticle(particle, maxX, y, minZ, 10);
-            world.spawnParticle(particle, maxX, y, maxZ, 10);
+            world.spawnParticle(particle, minX, y, minZ, count);
+            world.spawnParticle(particle, minX, y, maxZ, count);
+            world.spawnParticle(particle, maxX, y, minZ, count);
+            world.spawnParticle(particle, maxX, y, maxZ, count);
         }
         // Z edges
         for (int z = minZ; z < maxZ; z++) {
-            world.spawnParticle(particle, minX, minY, z, 10);
-            world.spawnParticle(particle, minX, maxY, z, 10);
-            world.spawnParticle(particle, maxX, minY, z, 10);
-            world.spawnParticle(particle, maxX, maxY, z, 10);
+            world.spawnParticle(particle, minX, minY, z, count);
+            world.spawnParticle(particle, minX, maxY, z, count);
+            world.spawnParticle(particle, maxX, minY, z, count);
+            world.spawnParticle(particle, maxX, maxY, z, count);
         }
     }
 

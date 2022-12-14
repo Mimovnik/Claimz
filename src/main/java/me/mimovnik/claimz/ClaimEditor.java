@@ -26,7 +26,7 @@ public class ClaimEditor implements Listener {
     private ScheduledExecutorService particleRenderer = Executors.newSingleThreadScheduledExecutor();
 
     public ClaimEditor() {
-        particleRenderer.scheduleAtFixedRate(this::displayClaim, 0, 250, MILLISECONDS);
+        particleRenderer.scheduleAtFixedRate(this::displayClaim, 0, 500, MILLISECONDS);
     }
 
     private void displayClaim() {
