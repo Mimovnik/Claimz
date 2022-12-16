@@ -10,14 +10,9 @@ public final class Claimz extends JavaPlugin {
 
     public Claimz(){
        claims = new ArrayList<>();
+       Claim.setClaims(claims);
     }
 
-    public void addClaim(Claim newClaim){
-        claims.add(newClaim);
-    }
-    public ArrayList<Claim> getClaims(){
-        return claims;
-    }
     @Override
     public void onEnable() {
         // Plugin startup logic

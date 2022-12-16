@@ -1,9 +1,12 @@
 package me.mimovnik.claimz;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
 
 import static org.bukkit.Particle.SONIC_BOOM;
 
@@ -11,6 +14,8 @@ public class Claim {
     private int minX, maxX, minY, maxY, minZ, maxZ;
     private World world;
     private Player owner;
+    private static ArrayList<Claim> claims;
+
 
     public Claim(Location firstCorner, Location secondCorner, World world, Player owner) {
         this.world = world;
@@ -23,6 +28,38 @@ public class Claim {
 
         minZ = Math.min(firstCorner.getBlockZ(), secondCorner.getBlockZ());
         maxZ = Math.max(firstCorner.getBlockZ(), secondCorner.getBlockZ());
+    }
+
+    public static boolean hasNOTPermission(Player player, Location location) {
+        for (Claim claim : claims) {
+            if (claim.contains(location) && player != claim.getOwner()) {
+                player.sendMessage(ChatColor.RED + "You don't have permission to do that. It's " + ChatColor.ITALIC + "" + ChatColor.YELLOW + claim.getOwner().getName() + ChatColor.RED + "'s claim.");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isInAnyClaim(Location location) {
+        for (Claim claim : claims) {
+            if (claim.contains(location)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void setClaims(ArrayList<Claim> claims) {
+        Claim.claims = claims;
+    }
+
+    public boolean intersects(Claim other){
+        return minX < other.maxX &&
+                maxX > other.minX &&
+                minY < other.maxY &&
+                maxY > other.minY &&
+                minZ < other.maxZ &&
+                maxZ > other.minZ;
     }
 
     public void display() {

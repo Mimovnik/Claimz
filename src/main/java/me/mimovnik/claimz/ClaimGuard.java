@@ -1,6 +1,5 @@
 package me.mimovnik.claimz;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -20,6 +19,8 @@ import org.bukkit.event.player.PlayerBucketFillEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+import static me.mimovnik.claimz.Claim.hasNOTPermission;
+import static me.mimovnik.claimz.Claim.isInAnyClaim;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageCause.*;
 
 public class ClaimGuard implements Listener {
@@ -27,25 +28,6 @@ public class ClaimGuard implements Listener {
 
     public ClaimGuard(ArrayList<Claim> claims) {
         this.claims = claims;
-    }
-
-    private boolean hasNOTPermission(Player player, Location location) {
-        for (Claim claim : claims) {
-            if (claim.contains(location) && player != claim.getOwner()) {
-                player.sendMessage(ChatColor.RED + "You don't have permission to do that. It's " + ChatColor.ITALIC + "" + ChatColor.YELLOW + claim.getOwner().getName() + ChatColor.RED + "'s claim.");
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isInAnyClaim(Location location) {
-        for (Claim claim : claims) {
-            if (claim.contains(location)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private Claim getClaimAt(Location location) {
