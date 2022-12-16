@@ -1,14 +1,12 @@
 package me.mimovnik.claimz;
 
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Particle;
-import org.bukkit.World;
+import org.bukkit.*;
+import org.bukkit.block.data.type.Bed;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 
-import static org.bukkit.Particle.SONIC_BOOM;
+import static org.bukkit.Particle.*;
 
 public class Claim {
     private int minX, maxX, minY, maxY, minZ, maxZ;
@@ -16,24 +14,37 @@ public class Claim {
     private Player owner;
     private static ArrayList<Claim> claims;
 
-
-    public Claim(Location firstCorner, Location secondCorner, World world, Player owner) {
+    public Claim(Location firstVertex, Location secondVertex, World world, Player owner) {
         this.world = world;
         this.owner = owner;
-        minX = Math.min(firstCorner.getBlockX(), secondCorner.getBlockX());
-        maxX = Math.max(firstCorner.getBlockX(), secondCorner.getBlockX());
+        minX = Math.min(firstVertex.getBlockX(), secondVertex.getBlockX());
+        maxX = Math.max(firstVertex.getBlockX(), secondVertex.getBlockX());
 
-        minY = Math.min(firstCorner.getBlockY(), secondCorner.getBlockY());
-        maxY = Math.max(firstCorner.getBlockY(), secondCorner.getBlockY());
+        minY = Math.min(firstVertex.getBlockY(), secondVertex.getBlockY());
+        maxY = Math.max(firstVertex.getBlockY(), secondVertex.getBlockY());
 
-        minZ = Math.min(firstCorner.getBlockZ(), secondCorner.getBlockZ());
-        maxZ = Math.max(firstCorner.getBlockZ(), secondCorner.getBlockZ());
+        minZ = Math.min(firstVertex.getBlockZ(), secondVertex.getBlockZ());
+        maxZ = Math.max(firstVertex.getBlockZ(), secondVertex.getBlockZ());
+    }
+
+    public void edit(Location newVertex) {
+
+    }
+
+    public static Claim getClaimAt(Location location) {
+        for (Claim claim : claims) {
+            if (claim.contains(location)) {
+                return claim;
+            }
+        }
+        return null;
     }
 
     public static boolean hasNOTPermission(Player player, Location location) {
         for (Claim claim : claims) {
             if (claim.contains(location) && player != claim.getOwner()) {
-                player.sendMessage(ChatColor.RED + "You don't have permission to do that. It's " + ChatColor.ITALIC + "" + ChatColor.YELLOW + claim.getOwner().getName() + ChatColor.RED + "'s claim.");
+                player.sendMessage(ChatColor.RED + "You don't have permission to do that. It's " +
+                        ChatColor.ITALIC + "" + ChatColor.YELLOW + claim.getOwner().getName() + ChatColor.RED + "'s claim.");
                 return true;
             }
         }
@@ -53,7 +64,21 @@ public class Claim {
         Claim.claims = claims;
     }
 
-    public boolean intersects(Claim other){
+    public boolean isVertex(Location location) {
+        int x = location.getBlockX();
+        int y = location.getBlockY();
+        int z = location.getBlockZ();
+        return (x == minX && y == minY && z == minZ) ||
+                (x == minX && y == minY && z == maxZ) ||
+                (x == minX && y == maxY && z == maxZ) ||
+                (x == minX && y == maxY && z == minZ) ||
+                (x == maxX && y == minY && z == minZ) ||
+                (x == maxX && y == minY && z == maxZ) ||
+                (x == maxX && y == maxY && z == maxZ) ||
+                (x == maxX && y == maxY && z == minZ);
+    }
+
+    public boolean intersects(Claim other) {
         return minX < other.maxX &&
                 maxX > other.minX &&
                 minY < other.maxY &&
@@ -63,28 +88,31 @@ public class Claim {
     }
 
     public void display() {
-        Particle particle = SONIC_BOOM;
+
         int count = 1;
+        float size = 5;
+        Color color = Color.RED;
+        double offset = 0.5;
         // X edges
-        for (int x = minX; x < maxX; x++) {
-            world.spawnParticle(particle, x, minY, minZ, count);
-            world.spawnParticle(particle, x, minY, maxZ, count);
-            world.spawnParticle(particle, x, maxY, minZ, count);
-            world.spawnParticle(particle, x, maxY, maxZ, count);
+        for (int x = minX; x <= maxX; x++) {
+            world.spawnParticle(REDSTONE, x + offset, minY + offset, minZ + offset, count, new Particle.DustOptions(color, size));
+            world.spawnParticle(REDSTONE, x + offset, minY + offset, maxZ + offset, count, new Particle.DustOptions(color, size));
+            world.spawnParticle(REDSTONE, x + offset, maxY + offset, minZ + offset, count, new Particle.DustOptions(color, size));
+            world.spawnParticle(REDSTONE, x + offset, maxY + offset, maxZ + offset, count, new Particle.DustOptions(color, size));
         }
         // Y edges
-        for (int y = minY; y < maxY; y++) {
-            world.spawnParticle(particle, minX, y, minZ, count);
-            world.spawnParticle(particle, minX, y, maxZ, count);
-            world.spawnParticle(particle, maxX, y, minZ, count);
-            world.spawnParticle(particle, maxX, y, maxZ, count);
+        for (int y = minY; y <= maxY; y++) {
+            world.spawnParticle(REDSTONE, minX + offset, y + offset, minZ + offset, count, new Particle.DustOptions(color, size));
+            world.spawnParticle(REDSTONE, minX + offset, y + offset, maxZ + offset, count, new Particle.DustOptions(color, size));
+            world.spawnParticle(REDSTONE, maxX + offset, y + offset, minZ + offset, count, new Particle.DustOptions(color, size));
+            world.spawnParticle(REDSTONE, maxX + offset, y + offset, maxZ + offset, count, new Particle.DustOptions(color, size));
         }
         // Z edges
-        for (int z = minZ; z < maxZ; z++) {
-            world.spawnParticle(particle, minX, minY, z, count);
-            world.spawnParticle(particle, minX, maxY, z, count);
-            world.spawnParticle(particle, maxX, minY, z, count);
-            world.spawnParticle(particle, maxX, maxY, z, count);
+        for (int z = minZ; z <= maxZ; z++) {
+            world.spawnParticle(REDSTONE, minX + offset, minY + offset, z + offset, count, new Particle.DustOptions(color, size));
+            world.spawnParticle(REDSTONE, minX + offset, maxY + offset, z + offset, count, new Particle.DustOptions(color, size));
+            world.spawnParticle(REDSTONE, maxX + offset, minY + offset, z + offset, count, new Particle.DustOptions(color, size));
+            world.spawnParticle(REDSTONE, maxX + offset, maxY + offset, z + offset, count, new Particle.DustOptions(color, size));
         }
     }
 
@@ -111,5 +139,32 @@ public class Claim {
         return (x >= minX && x <= maxX &&
                 y >= minY && y <= maxY &&
                 z >= minZ && z <= maxZ);
+    }
+
+    public Location getOpposingVertex(Location vertex) {
+        int x = minX;
+        int y = minY;
+        int z = minZ;
+        if (vertex.getBlockX() == x) {
+            x = maxX;
+        }
+        if (vertex.getBlockY() == y) {
+            y = maxY;
+        }
+        if (vertex.getBlockZ() == z) {
+            z = maxZ;
+        }
+        return new Location(world, x, y, z, 0, 0);
+    }
+
+    public void setNewBoundaries(Location firstVertex, Location secondVertex) {
+        minX = Math.min(firstVertex.getBlockX(), secondVertex.getBlockX());
+        maxX = Math.max(firstVertex.getBlockX(), secondVertex.getBlockX());
+
+        minY = Math.min(firstVertex.getBlockY(), secondVertex.getBlockY());
+        maxY = Math.max(firstVertex.getBlockY(), secondVertex.getBlockY());
+
+        minZ = Math.min(firstVertex.getBlockZ(), secondVertex.getBlockZ());
+        maxZ = Math.max(firstVertex.getBlockZ(), secondVertex.getBlockZ());
     }
 }

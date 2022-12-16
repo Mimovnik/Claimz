@@ -19,8 +19,7 @@ import org.bukkit.event.player.PlayerBucketFillEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import static me.mimovnik.claimz.Claim.hasNOTPermission;
-import static me.mimovnik.claimz.Claim.isInAnyClaim;
+import static me.mimovnik.claimz.Claim.*;
 import static org.bukkit.event.entity.EntityDamageEvent.DamageCause.*;
 
 public class ClaimGuard implements Listener {
@@ -30,14 +29,6 @@ public class ClaimGuard implements Listener {
         this.claims = claims;
     }
 
-    private Claim getClaimAt(Location location) {
-        for (Claim claim : claims) {
-            if (claim.contains(location)) {
-                return claim;
-            }
-        }
-        return null;
-    }
 
     @EventHandler
     public void onBreakBlock(BlockBreakEvent event) {
@@ -64,7 +55,7 @@ public class ClaimGuard implements Listener {
         Claim sourceBlockClaim = getClaimAt(event.getBlock().getLocation());
         Claim flowBlockClaim = getClaimAt(event.getToBlock().getLocation());
         // Flow can happen to any unclaimed block(From claimed to unclaimed)
-        if(flowBlockClaim == null){
+        if (flowBlockClaim == null) {
             return;
         }
         // Flow can happen if it's in the same claim or outside any(From claimed to the same claim)
@@ -105,20 +96,21 @@ public class ClaimGuard implements Listener {
         DamageCause cause = event.getCause();
         if (cause == ENTITY_EXPLOSION) {
             event.setCancelled(true);
-        }
 
-        Player attacker = null;
-        Entity damager = event.getDamager();
 
-        if (damager instanceof Player) {
-            attacker = (Player) damager;
-        } else if (damager instanceof Projectile projectile) {
-            if (projectile.getShooter() instanceof Player) {
-                attacker = (Player) projectile.getShooter();
+            Player attacker = null;
+            Entity damager = event.getDamager();
+
+            if (damager instanceof Player) {
+                attacker = (Player) damager;
+            } else if (damager instanceof Projectile projectile) {
+                if (projectile.getShooter() instanceof Player) {
+                    attacker = (Player) projectile.getShooter();
+                }
             }
-        }
-        if (attacker == null) return;
+            if (attacker == null) return;
 
-        event.setCancelled(hasNOTPermission(attacker, defender.getLocation()));
+            event.setCancelled(hasNOTPermission(attacker, defender.getLocation()));
+        }
     }
 }
