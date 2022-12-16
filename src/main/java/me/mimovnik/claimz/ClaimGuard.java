@@ -8,11 +8,14 @@ import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockMultiPlaceEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.player.PlayerBucketEmptyEvent;
+import org.bukkit.event.player.PlayerBucketFillEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,14 +48,45 @@ public class ClaimGuard implements Listener {
         return false;
     }
 
+    private Claim getClaimAt(Location location) {
+        for (Claim claim : claims) {
+            if (claim.contains(location)) {
+                return claim;
+            }
+        }
+        return null;
+    }
+
     @EventHandler
     public void onBreakBlock(BlockBreakEvent event) {
         event.setCancelled(hasNOTPermission(event.getPlayer(), event.getBlock().getLocation()));
     }
 
     @EventHandler
+    public void onBucketFill(PlayerBucketFillEvent event) {
+        event.setCancelled(hasNOTPermission(event.getPlayer(), event.getBlock().getLocation()));
+    }
+
+    @EventHandler
     public void onPlaceBlock(BlockPlaceEvent event) {
         event.setCancelled(hasNOTPermission(event.getPlayer(), event.getBlock().getLocation()));
+    }
+
+    @EventHandler
+    public void onBucketEmpty(PlayerBucketEmptyEvent event) {
+        event.setCancelled(hasNOTPermission(event.getPlayer(), event.getBlock().getLocation()));
+    }
+
+    @EventHandler
+    public void onLiquidBlockFlow(BlockFromToEvent event) {
+        Claim sourceBlockClaim = getClaimAt(event.getBlock().getLocation());
+        Claim flowBlockClaim = getClaimAt(event.getToBlock().getLocation());
+        // Flow can happen to any unclaimed block(From claimed to unclaimed)
+        if(flowBlockClaim == null){
+            return;
+        }
+        // Flow can happen if it's in the same claim or outside any(From claimed to the same claim)
+        event.setCancelled(sourceBlockClaim != flowBlockClaim);
     }
 
     @EventHandler
@@ -104,7 +138,5 @@ public class ClaimGuard implements Listener {
         if (attacker == null) return;
 
         event.setCancelled(hasNOTPermission(attacker, defender.getLocation()));
-
-
     }
 }
