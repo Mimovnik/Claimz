@@ -96,21 +96,20 @@ public class ClaimGuard implements Listener {
         DamageCause cause = event.getCause();
         if (cause == ENTITY_EXPLOSION) {
             event.setCancelled(true);
-
-
-            Player attacker = null;
-            Entity damager = event.getDamager();
-
-            if (damager instanceof Player) {
-                attacker = (Player) damager;
-            } else if (damager instanceof Projectile projectile) {
-                if (projectile.getShooter() instanceof Player) {
-                    attacker = (Player) projectile.getShooter();
-                }
-            }
-            if (attacker == null) return;
-
-            event.setCancelled(hasNOTPermission(attacker, defender.getLocation()));
         }
+
+        Player attacker = null;
+        Entity damager = event.getDamager();
+
+        if (damager instanceof Player) {
+            attacker = (Player) damager;
+        } else if (damager instanceof Projectile projectile) {
+            if (projectile.getShooter() instanceof Player) {
+                attacker = (Player) projectile.getShooter();
+            }
+        }
+        if (attacker == null) return;
+
+        event.setCancelled(hasNOTPermission(attacker, defender.getLocation()));
     }
 }
