@@ -1,22 +1,31 @@
 package me.mimovnik.claimz;
 
 import org.bukkit.*;
-import org.bukkit.block.data.type.Bed;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.UUID;
+import java.util.logging.Level;
 
 import static org.bukkit.Particle.*;
 
 public class Claim {
     private int minX, maxX, minY, maxY, minZ, maxZ;
-    private World world;
-    private Player owner;
+    private UUID claimID = UUID.randomUUID();
+    private UUID worldID;
+    private UUID ownerID;
     private static ArrayList<Claim> claims;
 
-    public Claim(Location firstVertex, Location secondVertex, World world, Player owner) {
-        this.world = world;
-        this.owner = owner;
+    public Claim(@NotNull Location firstVertex, @NotNull Location secondVertex, UUID worldID, UUID ownerID) {
+        this.worldID = worldID;
+        this.ownerID = ownerID;
         minX = Math.min(firstVertex.getBlockX(), secondVertex.getBlockX());
         maxX = Math.max(firstVertex.getBlockX(), secondVertex.getBlockX());
 
@@ -27,11 +36,66 @@ public class Claim {
         maxZ = Math.max(firstVertex.getBlockZ(), secondVertex.getBlockZ());
     }
 
-    public void edit(Location newVertex) {
-
+    public Claim(int minX, int maxX, int minY, int maxY, int minZ, int maxZ, UUID worldID, UUID ownerID) {
+        this.minX = minX;
+        this.maxX = maxX;
+        this.minY = minY;
+        this.maxY = maxY;
+        this.minZ = minZ;
+        this.maxZ = maxZ;
+        this.worldID = worldID;
+        this.ownerID = ownerID;
     }
 
-    public static Claim getClaimAt(Location location) {
+    public void saveToFile() {
+        try {
+            trySave();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void trySave() throws IOException {
+        File dir = Bukkit.getServer().getPluginManager().getPlugin("Claimz").getDataFolder();
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        File dataFile = new File(dir + File.separator + "Claimz.data");
+        if (!dataFile.exists()) {
+            dataFile.createNewFile();
+        }
+
+        File tempFile = new File(dataFile + "temp");
+
+        deleteOldClaimData(dataFile, tempFile);
+        appendClaimData(tempFile);
+
+        dataFile.delete();
+        tempFile.renameTo(dataFile);
+    }
+
+    private void deleteOldClaimData(@NotNull File source, File destination) throws IOException {
+        try (Scanner scanner = new Scanner(source);
+             FileWriter fileWriter = new FileWriter(destination)) {
+
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                if (line.contains(claimID.toString())) {
+                    continue;
+                }
+                fileWriter.write(line + '\n');
+            }
+        }
+    }
+
+    private void appendClaimData(File file) throws IOException {
+        try (FileWriter fileWriter = new FileWriter(file, true)) {
+            fileWriter.write(this.toString() + '\n');
+            Bukkit.getServer().getLogger().log(Level.INFO, "Claim (" + claimID + ") data successfully saved.");
+        }
+    }
+
+    public static @Nullable Claim getClaimAt(Location location) {
         for (Claim claim : claims) {
             if (claim.contains(location)) {
                 return claim;
@@ -42,9 +106,9 @@ public class Claim {
 
     public static boolean hasNOTPermission(Player player, Location location) {
         for (Claim claim : claims) {
-            if (claim.contains(location) && player != claim.getOwner()) {
+            if (claim.contains(location) && player.getUniqueId() != claim.getOwnerID()) {
                 player.sendMessage(ChatColor.RED + "You don't have permission to do that. It's " +
-                        ChatColor.ITALIC + "" + ChatColor.YELLOW + claim.getOwner().getName() + ChatColor.RED + "'s claim.");
+                        ChatColor.ITALIC + "" + ChatColor.YELLOW + Bukkit.getPlayer(claim.getOwnerID()).getName() + ChatColor.RED + "'s claim.");
                 return true;
             }
         }
@@ -93,6 +157,7 @@ public class Claim {
         float size = 5;
         Color color = Color.RED;
         double offset = 0.5;
+        World world = Bukkit.getWorld(worldID);
         // X edges
         for (int x = minX; x <= maxX; x++) {
             world.spawnParticle(REDSTONE, x + offset, minY + offset, minZ + offset, count, new Particle.DustOptions(color, size));
@@ -118,21 +183,22 @@ public class Claim {
 
     @Override
     public String toString() {
-        return "Claim{" +
-                "minX=" + minX +
-                ", maxX=" + maxX +
-                ", minY=" + minY +
-                ", maxY=" + maxY +
-                ", minZ=" + minZ +
-                ", maxZ=" + maxZ +
-                '}';
+        return "claimID=" + claimID +
+                ";minX=" + minX +
+                ";maxX=" + maxX +
+                ";minY=" + minY +
+                ";maxY=" + maxY +
+                ";minZ=" + minZ +
+                ";maxZ=" + maxZ +
+                ";worldID=" + worldID +
+                ";ownerID=" + ownerID;
     }
 
-    public Player getOwner() {
-        return owner;
+    public UUID getOwnerID() {
+        return ownerID;
     }
 
-    public boolean contains(Location location) {
+    public boolean contains(@NotNull Location location) {
         int x = location.getBlockX();
         int y = location.getBlockY();
         int z = location.getBlockZ();
@@ -141,7 +207,7 @@ public class Claim {
                 z >= minZ && z <= maxZ);
     }
 
-    public Location getOpposingVertex(Location vertex) {
+    public Location getOpposingVertex(@NotNull Location vertex) {
         int x = minX;
         int y = minY;
         int z = minZ;
@@ -154,10 +220,10 @@ public class Claim {
         if (vertex.getBlockZ() == z) {
             z = maxZ;
         }
-        return new Location(world, x, y, z, 0, 0);
+        return new Location(Bukkit.getWorld(worldID), x, y, z, 0, 0);
     }
 
-    public void setNewBoundaries(Location firstVertex, Location secondVertex) {
+    public void setNewBoundaries(@NotNull Location firstVertex, @NotNull Location secondVertex) {
         minX = Math.min(firstVertex.getBlockX(), secondVertex.getBlockX());
         maxX = Math.max(firstVertex.getBlockX(), secondVertex.getBlockX());
 

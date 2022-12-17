@@ -1,8 +1,14 @@
 package me.mimovnik.claimz;
 
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.logging.Level;
 
 public final class Claimz extends JavaPlugin {
 
@@ -18,6 +24,7 @@ public final class Claimz extends JavaPlugin {
         // Plugin startup logic
         getServer().getPluginManager().registerEvents(new ClaimEditor(claims),this);
         getServer().getPluginManager().registerEvents(new ClaimGuard(claims), this);
+//        Bukkit.getServer().getLogger().log(Level.INFO, "FOLDER=======" +));
     }
 
     @Override

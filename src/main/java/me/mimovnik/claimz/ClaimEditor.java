@@ -1,5 +1,6 @@
 package me.mimovnik.claimz;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -12,6 +13,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
@@ -45,7 +47,7 @@ public class ClaimEditor implements Listener {
     }
 
     @EventHandler
-    public void onPlayerItemHeld(PlayerItemHeldEvent event) {
+    public void onPlayerItemHeld(@NotNull PlayerItemHeldEvent event) {
         Player player = event.getPlayer();
         ItemStack item = player.getInventory().getItem(event.getNewSlot());
         if (item == null) {
@@ -65,7 +67,7 @@ public class ClaimEditor implements Listener {
     }
 
     @EventHandler
-    public void onRightClick(PlayerInteractEvent event) {
+    public void onRightClick(@NotNull PlayerInteractEvent event) {
         Player player = event.getPlayer();
         if (isHoldingEditorTool && event.getHand() == EquipmentSlot.HAND) {
             Action action = event.getAction();
@@ -80,6 +82,7 @@ public class ClaimEditor implements Listener {
 
                 if(claimToEdit != null){
                     claimToEdit.setNewBoundaries(block.getLocation(), opposingVertex);
+                    claimToEdit.saveToFile();
                     claimToEdit = null;
                     return;
                 }
@@ -103,11 +106,11 @@ public class ClaimEditor implements Listener {
         } else {
             secondVertex = block.getLocation();
             player.sendMessage("Second vertex set to:" + block.getLocation());
-            Claim newClaim = new Claim(firstVertex, secondVertex, player.getWorld(), player);
+            Claim newClaim = new Claim(firstVertex, secondVertex, player.getWorld().getUID(), player.getUniqueId());
             for (Claim claim : claims) {
-                if (newClaim.intersects(claim) && newClaim.getOwner() != claim.getOwner()) {
+                if (newClaim.intersects(claim) && newClaim.getOwnerID() != claim.getOwnerID()) {
                     player.sendMessage(ChatColor.RED + "This claim would intersect with " +
-                            ChatColor.ITALIC + "" + ChatColor.YELLOW + claim.getOwner().getName() +
+                            ChatColor.ITALIC + "" + ChatColor.YELLOW + Bukkit.getPlayer(claim.getOwnerID()).getName() +
                             ChatColor.RED + "'s claim. Choose another vertex.");
                     secondVertex = null;
                     return;
@@ -115,12 +118,13 @@ public class ClaimEditor implements Listener {
             }
             player.sendMessage("Claim set to" + newClaim);
             claims.add(newClaim);
+            newClaim.saveToFile();
             firstVertex = null;
             secondVertex = null;
         }
     }
 
-    private void cancelSetup(Player player) {
+    private void cancelSetup(@NotNull Player player) {
         player.sendMessage("Claim setup canceled.");
         firstVertex = null;
         secondVertex = null;
