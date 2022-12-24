@@ -16,26 +16,33 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static me.mimovnik.claimz.Claim.getClaimAt;
 import static me.mimovnik.claimz.Claim.hasNOTPermission;
+import static org.bukkit.Bukkit.getServer;
 
 public class ClaimEditor implements Listener {
+    private UUID ownerID;
     private Location firstVertex, secondVertex;
     private boolean isHoldingEditorTool = false;
     private Material editorTool = Material.STICK;
     private ArrayList<Claim> claims;
     private ScheduledExecutorService particleRenderer = Executors.newSingleThreadScheduledExecutor();
-
     private Claim claimToEdit;
     private Location opposingVertex;
 
-    public ClaimEditor(ArrayList<Claim> claims) {
+    public ClaimEditor(ArrayList<Claim> claims, UUID ownerID) {
+        this.ownerID = ownerID;
         this.claims = claims;
         particleRenderer.scheduleAtFixedRate(this::displayClaims, 0, 500, MILLISECONDS);
+    }
+
+    public UUID getOwnerID(){
+        return ownerID;
     }
 
     private void displayClaims() {
@@ -48,6 +55,9 @@ public class ClaimEditor implements Listener {
 
     @EventHandler
     public void onPlayerItemHeld(@NotNull PlayerItemHeldEvent event) {
+        if (!event.getPlayer().getUniqueId().equals(ownerID)) {
+            return;
+        }
         Player player = event.getPlayer();
         ItemStack item = player.getInventory().getItem(event.getNewSlot());
         if (item == null) {
@@ -68,6 +78,9 @@ public class ClaimEditor implements Listener {
 
     @EventHandler
     public void onRightClick(@NotNull PlayerInteractEvent event) {
+        if (!event.getPlayer().getUniqueId().equals(ownerID)) {
+            return;
+        }
         Player player = event.getPlayer();
         if (isHoldingEditorTool && event.getHand() == EquipmentSlot.HAND) {
             Action action = event.getAction();
@@ -80,7 +93,7 @@ public class ClaimEditor implements Listener {
                     return;
                 }
 
-                if(claimToEdit != null){
+                if (claimToEdit != null) {
                     claimToEdit.setNewBoundaries(block.getLocation(), opposingVertex);
                     claimToEdit.saveToFile();
                     claimToEdit = null;
@@ -88,11 +101,11 @@ public class ClaimEditor implements Listener {
                 }
 
                 Claim clicked = getClaimAt(block.getLocation());
-                if(firstVertex == null && clicked != null && clicked.isVertex(block.getLocation())){
+                if (firstVertex == null && clicked != null && clicked.isVertex(block.getLocation())) {
                     claimToEdit = clicked;
                     opposingVertex = clicked.getOpposingVertex(block.getLocation());
                     player.sendMessage("Editing your claim. Right click a block to select new vertex.");
-                }else{
+                } else {
                     setupNewClaim(player, block);
                 }
             }
