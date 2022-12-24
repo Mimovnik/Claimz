@@ -53,6 +53,9 @@ public class ClaimGuard implements Listener {
 
     @EventHandler
     public void onInteract(PlayerInteractEvent event){
+        if(event.getClickedBlock() == null){
+            return;
+        }
         if(!event.getClickedBlock().getType().isInteractable()){
             return;
         }
