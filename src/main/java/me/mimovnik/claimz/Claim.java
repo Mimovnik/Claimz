@@ -59,6 +59,7 @@ public class Claim {
     private static void tryLoad() throws IOException {
         File dataFile = new File(Bukkit.getServer().getPluginManager().getPlugin("Claimz").getDataFolder() + File.separator + "Claimz.data");
         if (!dataFile.exists()) {
+            Bukkit.getServer().getLogger().log(Level.INFO, "Could not load claims.");
             return;
         }
 
@@ -83,6 +84,8 @@ public class Claim {
                 claims.add(new Claim(claimID, minX, maxX, minY, maxY, minZ, maxZ, worldID, ownerID));
             }
         }
+
+        Bukkit.getServer().getLogger().log(Level.INFO, "Claims successfully loaded.");
     }
 
     public void saveToFile() {
