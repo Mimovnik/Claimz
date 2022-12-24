@@ -6,7 +6,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,12 +17,13 @@ import static org.bukkit.Particle.*;
 
 public class Claim {
     private int minX, maxX, minY, maxY, minZ, maxZ;
-    private UUID claimID = UUID.randomUUID();
+    private UUID claimID;
     private UUID worldID;
     private UUID ownerID;
     private static ArrayList<Claim> claims;
 
     public Claim(@NotNull Location firstVertex, @NotNull Location secondVertex, UUID worldID, UUID ownerID) {
+        claimID = UUID.randomUUID();
         this.worldID = worldID;
         this.ownerID = ownerID;
         minX = Math.min(firstVertex.getBlockX(), secondVertex.getBlockX());
@@ -36,7 +36,8 @@ public class Claim {
         maxZ = Math.max(firstVertex.getBlockZ(), secondVertex.getBlockZ());
     }
 
-    public Claim(int minX, int maxX, int minY, int maxY, int minZ, int maxZ, UUID worldID, UUID ownerID) {
+    public Claim(UUID claimID, int minX, int maxX, int minY, int maxY, int minZ, int maxZ, UUID worldID, UUID ownerID) {
+        this.claimID = claimID;
         this.minX = minX;
         this.maxX = maxX;
         this.minY = minY;
@@ -45,6 +46,43 @@ public class Claim {
         this.maxZ = maxZ;
         this.worldID = worldID;
         this.ownerID = ownerID;
+    }
+
+    public static void loadFromFile() {
+        try {
+            tryLoad();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void tryLoad() throws IOException {
+        File dataFile = new File(Bukkit.getServer().getPluginManager().getPlugin("Claimz").getDataFolder() + File.separator + "Claimz.data");
+        if (!dataFile.exists()) {
+            return;
+        }
+
+        try (Scanner scanner = new Scanner(dataFile)) {
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] data = line.split(";");
+                int dataCount = 9;
+                if (data.length != dataCount) {
+                    throw new RuntimeException("Corrupted line of save data: " + line);
+                }
+                UUID claimID = UUID.fromString(data[0]);
+                int minX = Integer.parseInt(data[1]);
+                int maxX = Integer.parseInt(data[2]);
+                int minY = Integer.parseInt(data[3]);
+                int maxY = Integer.parseInt(data[4]);
+                int minZ = Integer.parseInt(data[5]);
+                int maxZ = Integer.parseInt(data[6]);
+                UUID worldID = UUID.fromString(data[7]);
+                UUID ownerID = UUID.fromString(data[8]);
+
+                claims.add(new Claim(claimID, minX, maxX, minY, maxY, minZ, maxZ, worldID, ownerID));
+            }
+        }
     }
 
     public void saveToFile() {
@@ -74,7 +112,7 @@ public class Claim {
         tempFile.renameTo(dataFile);
     }
 
-    private void deleteOldClaimData(@NotNull File source, File destination) throws IOException {
+    private void deleteOldClaimData(@NotNull File source, @NotNull File destination) throws IOException {
         try (Scanner scanner = new Scanner(source);
              FileWriter fileWriter = new FileWriter(destination)) {
 
@@ -88,9 +126,9 @@ public class Claim {
         }
     }
 
-    private void appendClaimData(File file) throws IOException {
+    private void appendClaimData(@NotNull File file) throws IOException {
         try (FileWriter fileWriter = new FileWriter(file, true)) {
-            fileWriter.write(this.toString() + '\n');
+            fileWriter.write(this.toSaveFormat() + '\n');
             Bukkit.getServer().getLogger().log(Level.INFO, "Claim (" + claimID + ") data successfully saved.");
         }
     }
@@ -106,7 +144,7 @@ public class Claim {
 
     public static boolean hasNOTPermission(Player player, Location location) {
         for (Claim claim : claims) {
-            if (claim.contains(location) && player.getUniqueId() != claim.getOwnerID()) {
+            if (claim.contains(location) && !player.getUniqueId().equals(claim.getOwnerID())) {
                 player.sendMessage(ChatColor.RED + "You don't have permission to do that. It's " +
                         ChatColor.ITALIC + "" + ChatColor.YELLOW + Bukkit.getPlayer(claim.getOwnerID()).getName() + ChatColor.RED + "'s claim.");
                 return true;
@@ -183,15 +221,25 @@ public class Claim {
 
     @Override
     public String toString() {
-        return "claimID=" + claimID +
-                ";minX=" + minX +
-                ";maxX=" + maxX +
-                ";minY=" + minY +
-                ";maxY=" + maxY +
-                ";minZ=" + minZ +
-                ";maxZ=" + maxZ +
-                ";worldID=" + worldID +
-                ";ownerID=" + ownerID;
+        return "Claim: " +
+                " minX=" + minX +
+                " maxX=" + maxX +
+                " minY=" + minY +
+                " maxY=" + maxY +
+                " minZ=" + minZ +
+                " maxZ=" + maxZ;
+    }
+
+    private String toSaveFormat() {
+        return claimID +
+                ";" + minX +
+                ";" + maxX +
+                ";" + minY +
+                ";" + maxY +
+                ";" + minZ +
+                ";" + maxZ +
+                ";" + worldID +
+                ";" + ownerID;
     }
 
     public UUID getOwnerID() {

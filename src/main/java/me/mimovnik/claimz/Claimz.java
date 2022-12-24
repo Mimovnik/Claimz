@@ -25,6 +25,7 @@ public final class Claimz extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new ClaimEditor(claims),this);
         getServer().getPluginManager().registerEvents(new ClaimGuard(claims), this);
 //        Bukkit.getServer().getLogger().log(Level.INFO, "FOLDER=======" +));
+        Claim.loadFromFile();
     }
 
     @Override
