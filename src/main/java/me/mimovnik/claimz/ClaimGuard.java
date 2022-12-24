@@ -15,6 +15,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +49,14 @@ public class ClaimGuard implements Listener {
     @EventHandler
     public void onBucketEmpty(PlayerBucketEmptyEvent event) {
         event.setCancelled(hasNOTPermission(event.getPlayer(), event.getBlock().getLocation()));
+    }
+
+    @EventHandler
+    public void onInteract(PlayerInteractEvent event){
+        if(!event.getClickedBlock().getType().isInteractable()){
+            return;
+        }
+        event.setCancelled(hasNOTPermission(event.getPlayer(),event.getClickedBlock().getLocation()));
     }
 
     @EventHandler

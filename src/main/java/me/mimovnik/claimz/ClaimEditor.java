@@ -110,7 +110,7 @@ public class ClaimEditor implements Listener {
             for (Claim claim : claims) {
                 if (newClaim.intersects(claim) && newClaim.getOwnerID() != claim.getOwnerID()) {
                     player.sendMessage(ChatColor.RED + "This claim would intersect with " +
-                            ChatColor.ITALIC + "" + ChatColor.YELLOW + Bukkit.getPlayer(claim.getOwnerID()).getName() +
+                            ChatColor.ITALIC + "" + ChatColor.YELLOW + Bukkit.getOfflinePlayer(claim.getOwnerID()).getName() +
                             ChatColor.RED + "'s claim. Choose another vertex.");
                     secondVertex = null;
                     return;

@@ -142,11 +142,11 @@ public class Claim {
         return null;
     }
 
-    public static boolean hasNOTPermission(Player player, Location location) {
+    public static boolean hasNOTPermission(@NotNull Player player, @NotNull Location location) {
         for (Claim claim : claims) {
             if (claim.contains(location) && !player.getUniqueId().equals(claim.getOwnerID())) {
                 player.sendMessage(ChatColor.RED + "You don't have permission to do that. It's " +
-                        ChatColor.ITALIC + "" + ChatColor.YELLOW + Bukkit.getPlayer(claim.getOwnerID()).getName() + ChatColor.RED + "'s claim.");
+                        ChatColor.ITALIC + "" + ChatColor.YELLOW + Bukkit.getOfflinePlayer(claim.getOwnerID()).getName() + ChatColor.RED + "'s claim.");
                 return true;
             }
         }
