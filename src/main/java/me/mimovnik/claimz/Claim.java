@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.UUID;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.bukkit.Particle.*;
 
@@ -59,7 +60,7 @@ public class Claim {
     private static void tryLoad() throws IOException {
         File dataFile = new File(Bukkit.getServer().getPluginManager().getPlugin("Claimz").getDataFolder() + File.separator + "Claimz.data");
         if (!dataFile.exists()) {
-            Bukkit.getServer().getLogger().log(Level.INFO, "Could not load claims.");
+            Bukkit.getServer().getLogger().log(Level.INFO, "Could not load claims because this file '" + dataFile + "' does not exist.");
             return;
         }
 
@@ -69,7 +70,7 @@ public class Claim {
                 String[] data = line.split(";");
                 int dataCount = 9;
                 if (data.length != dataCount) {
-                    throw new RuntimeException("Corrupted line of save data: " + line);
+                    throw new RuntimeException("Corrupted line of save data in this line '" + line + "' of this file '" + dataFile + "'.");
                 }
                 UUID claimID = UUID.fromString(data[0]);
                 int minX = Integer.parseInt(data[1]);
@@ -96,6 +97,30 @@ public class Claim {
         }
     }
 
+    public void removeFromFile(){
+        try{
+            tryRemove();
+        } catch(IOException e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void tryRemove() throws IOException {
+        File dataFile = new File(Bukkit.getServer().getPluginManager().getPlugin("Claimz").getDataFolder() + File.separator + "Claimz.data");
+        Logger logger = Bukkit.getServer().getLogger();
+        if (!dataFile.exists()) {
+            logger.log(Level.INFO, "Could not remove claim: " + this + " because this file '" + dataFile + "' does not exist.");
+            return;
+        }
+
+        File tempFile = new File(dataFile + "temp");
+        createNewFileWithoutThisClaim(dataFile, tempFile);
+
+        dataFile.delete();
+        tempFile.renameTo(dataFile);
+        logger.log(Level.INFO, "Successfully removed claim: " + this);
+    }
+
     private void trySave() throws IOException {
         File dir = Bukkit.getServer().getPluginManager().getPlugin("Claimz").getDataFolder();
         if (!dir.exists()) {
@@ -108,14 +133,14 @@ public class Claim {
 
         File tempFile = new File(dataFile + "temp");
 
-        deleteOldClaimData(dataFile, tempFile);
+        createNewFileWithoutThisClaim(dataFile, tempFile);
         appendClaimData(tempFile);
 
         dataFile.delete();
         tempFile.renameTo(dataFile);
     }
 
-    private void deleteOldClaimData(@NotNull File source, @NotNull File destination) throws IOException {
+    private void createNewFileWithoutThisClaim(@NotNull File source, @NotNull File destination) throws IOException {
         try (Scanner scanner = new Scanner(source);
              FileWriter fileWriter = new FileWriter(destination)) {
 
@@ -169,7 +194,7 @@ public class Claim {
         Claim.claims = claims;
     }
 
-    public boolean isVertex(Location location) {
+    public boolean isVertex(@NotNull Location location) {
         int x = location.getBlockX();
         int y = location.getBlockY();
         int z = location.getBlockZ();
@@ -183,7 +208,7 @@ public class Claim {
                 (x == maxX && y == maxY && z == minZ);
     }
 
-    public boolean intersects(Claim other) {
+    public boolean intersects(@NotNull Claim other) {
         return minX < other.maxX &&
                 maxX > other.minX &&
                 minY < other.maxY &&

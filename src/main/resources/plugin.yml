@@ -4,3 +4,7 @@ main: me.mimovnik.claimz.Claimz
 api-version: 1.19
 authors: [ Mimovnik ]
 description: Allow players to claim land where you cannot be griefed.
+commands:
+  deleteClaim:
+    description: Deletes the claim a sender is currently standing in.
+    usage: /<command>

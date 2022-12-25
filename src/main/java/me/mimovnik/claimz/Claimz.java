@@ -6,11 +6,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Scanner;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -30,7 +26,8 @@ public final class Claimz extends JavaPlugin implements Listener {
         // Plugin startup logic
         getServer().getPluginManager().registerEvents(new ClaimGuard(claims), this);
         getServer().getPluginManager().registerEvents(this, this);
-//        Bukkit.getServer().getLogger().log(Level.INFO, "FOLDER=======" +));
+        getCommand("deleteClaim").setExecutor(new deleteClaimCommand(claims));
+
         Claim.loadFromFile();
     }
 
@@ -46,7 +43,7 @@ public final class Claimz extends JavaPlugin implements Listener {
         ClaimEditor claimEditor = new ClaimEditor(claims, uniqueId);
         claimEditors.add(claimEditor);
         getServer().getPluginManager().registerEvents(claimEditor, this);
-        Bukkit.getServer().getLogger().log(Level.INFO, "Claimz: Successfully created a new claim editor for" + event.getPlayer().getName());
+        Bukkit.getServer().getLogger().log(Level.INFO, "Claimz: Successfully created a new claim editor for " + event.getPlayer().getName());
     }
 
     @Override
