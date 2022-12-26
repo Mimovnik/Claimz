@@ -11,15 +11,18 @@ import java.util.ArrayList;
 import static me.mimovnik.claimz.Claim.getClaimAt;
 import static me.mimovnik.claimz.Claim.hasNOTPermission;
 
-public class deleteClaimCommand implements CommandExecutor {
+public class DeleteClaim implements CommandExecutor {
     private  ArrayList<Claim> claims;
 
-    public deleteClaimCommand(ArrayList<Claim> claims){
+    public DeleteClaim(ArrayList<Claim> claims){
         this.claims = claims;
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        if(args.length != 0){
+            return false;
+        }
         if (sender instanceof Player player) {
             if (hasNOTPermission(player, player.getLocation())) {
                 return true;

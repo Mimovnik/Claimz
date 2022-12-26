@@ -7,4 +7,7 @@ description: Allow players to claim land where you cannot be griefed.
 commands:
   deleteClaim:
     description: Deletes the claim a sender is currently standing in.
-    usage: /<command>
+    usage: /<command> <- without any arguments
+  toggleShowClaims:
+    description: Toggles the display of nearby claims.
+    usage: /<command> <- without any arguments

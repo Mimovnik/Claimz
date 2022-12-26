@@ -31,6 +31,7 @@ public class ClaimEditor implements Listener {
     private Claim claimToEdit;
     private Location opposingVertex;
     private static final double maxClaimDisplayDistance = 500;
+    private boolean showClaims;
 
     public ClaimEditor(ArrayList<Claim> claims, UUID ownerID) {
         this.ownerID = ownerID;
@@ -42,8 +43,16 @@ public class ClaimEditor implements Listener {
         return ownerID;
     }
 
+    public boolean getShowClaims(){
+        return showClaims;
+    }
+
+    public void setShowClaims(boolean showClaims){
+        this.showClaims = showClaims;
+    }
+
     private void displayClaims() {
-        if (isHoldingEditorTool) {
+        if (isHoldingEditorTool || showClaims) {
             Color color;
             for (Claim claim : claims) {
                 Location claimCenter = claim.getCenter();
@@ -51,6 +60,7 @@ public class ClaimEditor implements Listener {
                 double distanceSqr = Math.pow((claimCenter.getBlockX() - playerPos.getBlockX()), 2) +
                         Math.pow((claimCenter.getBlockY() - playerPos.getBlockY()), 2) +
                         Math.pow((claimCenter.getBlockZ() - playerPos.getBlockZ()), 2);
+
                 if (distanceSqr >= Math.pow(maxClaimDisplayDistance, 2)) {
                     continue;
                 }

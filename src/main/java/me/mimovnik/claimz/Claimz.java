@@ -1,10 +1,13 @@
 package me.mimovnik.claimz;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -26,7 +29,8 @@ public final class Claimz extends JavaPlugin implements Listener {
         // Plugin startup logic
         getServer().getPluginManager().registerEvents(new ClaimGuard(claims), this);
         getServer().getPluginManager().registerEvents(this, this);
-        getCommand("deleteClaim").setExecutor(new deleteClaimCommand(claims));
+        getCommand("deleteClaim").setExecutor(new DeleteClaim(claims));
+        getCommand("toggleShowClaims").setExecutor(new ToggleShowClaims(claimEditors));
 
         Claim.loadFromFile();
     }
@@ -36,7 +40,7 @@ public final class Claimz extends JavaPlugin implements Listener {
         UUID uniqueId = event.getPlayer().getUniqueId();
         for (ClaimEditor claimEditor : claimEditors) {
             // If the player already has them own editor
-            if (claimEditor.getOwnerID().equals(uniqueId)){
+            if (claimEditor.getOwnerID().equals(uniqueId)) {
                 return;
             }
         }
