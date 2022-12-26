@@ -1,9 +1,6 @@
 package me.mimovnik.claimz;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -23,7 +20,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static me.mimovnik.claimz.Claim.getClaimAt;
 import static me.mimovnik.claimz.Claim.hasNOTPermission;
-import static org.bukkit.Bukkit.getServer;
 
 public class ClaimEditor implements Listener {
     private UUID ownerID;
@@ -34,6 +30,7 @@ public class ClaimEditor implements Listener {
     private ScheduledExecutorService particleRenderer = Executors.newSingleThreadScheduledExecutor();
     private Claim claimToEdit;
     private Location opposingVertex;
+    private static final double maxClaimDisplayDistance = 500;
 
     public ClaimEditor(ArrayList<Claim> claims, UUID ownerID) {
         this.ownerID = ownerID;
@@ -41,14 +38,30 @@ public class ClaimEditor implements Listener {
         particleRenderer.scheduleAtFixedRate(this::displayClaims, 0, 500, MILLISECONDS);
     }
 
-    public UUID getOwnerID(){
+    public UUID getOwnerID() {
         return ownerID;
     }
 
     private void displayClaims() {
         if (isHoldingEditorTool) {
+            Color color;
             for (Claim claim : claims) {
-                claim.display();
+                Location claimCenter = claim.getCenter();
+                Location playerPos = Bukkit.getPlayer(ownerID).getLocation();
+                double distanceSqr = Math.pow((claimCenter.getBlockX() - playerPos.getBlockX()), 2) +
+                        Math.pow((claimCenter.getBlockY() - playerPos.getBlockY()), 2) +
+                        Math.pow((claimCenter.getBlockZ() - playerPos.getBlockZ()), 2);
+                if (distanceSqr >= Math.pow(maxClaimDisplayDistance, 2)) {
+                    continue;
+                }
+
+                if (claim.getOwnerID().equals(ownerID)) {
+                    color = Color.LIME;
+                } else {
+                    color = Color.RED;
+                }
+
+                claim.display(color);
             }
         }
     }

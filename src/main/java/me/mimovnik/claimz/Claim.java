@@ -49,6 +49,10 @@ public class Claim {
         this.ownerID = ownerID;
     }
 
+    public Location getCenter() {
+        return new Location(Bukkit.getWorld(worldID), (float) (minX + maxX) / 2, (float) (minY + maxY) / 2, (float) (minZ + maxZ) / 2);
+    }
+
     public static void loadFromFile() {
         try {
             tryLoad();
@@ -97,10 +101,10 @@ public class Claim {
         }
     }
 
-    public void removeFromFile(){
-        try{
+    public void removeFromFile() {
+        try {
             tryRemove();
-        } catch(IOException e){
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -217,11 +221,10 @@ public class Claim {
                 maxZ > other.minZ;
     }
 
-    public void display() {
+    public void display(Color color) {
 
         int count = 1;
         float size = 5;
-        Color color = Color.RED;
         double offset = 0.5;
         World world = Bukkit.getWorld(worldID);
         // X edges
