@@ -1,9 +1,11 @@
 package me.mimovnik.claimz;
 
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Monster;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -20,52 +22,51 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import static me.mimovnik.claimz.Claim.*;
-import static org.bukkit.event.entity.EntityDamageEvent.DamageCause.*;
+import static org.bukkit.event.entity.EntityDamageEvent.DamageCause.ENTITY_EXPLOSION;
 
 public class ClaimGuard implements Listener {
-    private ArrayList<Claim> claims;
 
-    public ClaimGuard(ArrayList<Claim> claims) {
-        this.claims = claims;
+    private ClaimContainer claimContainer;
+
+    public ClaimGuard(ClaimContainer claimContainer) {
+        this.claimContainer = claimContainer;
     }
-
 
     @EventHandler
     public void onBreakBlock(BlockBreakEvent event) {
-        event.setCancelled(hasNOTPermission(event.getPlayer(), event.getBlock().getLocation()));
+        event.setCancelled(claimContainer.hasNOTPermission(event.getPlayer(), event.getBlock().getLocation()));
     }
 
     @EventHandler
     public void onBucketFill(PlayerBucketFillEvent event) {
-        event.setCancelled(hasNOTPermission(event.getPlayer(), event.getBlock().getLocation()));
+        event.setCancelled(claimContainer.hasNOTPermission(event.getPlayer(), event.getBlock().getLocation()));
     }
 
     @EventHandler
     public void onPlaceBlock(BlockPlaceEvent event) {
-        event.setCancelled(hasNOTPermission(event.getPlayer(), event.getBlock().getLocation()));
+        event.setCancelled(claimContainer.hasNOTPermission(event.getPlayer(), event.getBlock().getLocation()));
     }
 
     @EventHandler
     public void onBucketEmpty(PlayerBucketEmptyEvent event) {
-        event.setCancelled(hasNOTPermission(event.getPlayer(), event.getBlock().getLocation()));
+        event.setCancelled(claimContainer.hasNOTPermission(event.getPlayer(), event.getBlock().getLocation()));
     }
 
     @EventHandler
-    public void onInteract(PlayerInteractEvent event){
-        if(event.getClickedBlock() == null){
+    public void onInteract(PlayerInteractEvent event) {
+        if (event.getClickedBlock() == null) {
             return;
         }
-        if(!event.getClickedBlock().getType().isInteractable()){
+        if (!event.getClickedBlock().getType().isInteractable()) {
             return;
         }
-        event.setCancelled(hasNOTPermission(event.getPlayer(),event.getClickedBlock().getLocation()));
+        event.setCancelled(claimContainer.hasNOTPermission(event.getPlayer(), event.getClickedBlock().getLocation()));
     }
 
     @EventHandler
     public void onLiquidBlockFlow(BlockFromToEvent event) {
-        Claim sourceBlockClaim = getClaimAt(event.getBlock().getLocation());
-        Claim flowBlockClaim = getClaimAt(event.getToBlock().getLocation());
+        Claim sourceBlockClaim = claimContainer.getClaimAt(event.getBlock().getLocation());
+        Claim flowBlockClaim = claimContainer.getClaimAt(event.getToBlock().getLocation());
         // Flow can happen to any unclaimed block(From claimed to unclaimed)
         if (flowBlockClaim == null) {
             return;
@@ -76,7 +77,7 @@ public class ClaimGuard implements Listener {
 
     @EventHandler
     public void onMultiPlaceBlock(BlockMultiPlaceEvent event) {
-        event.setCancelled(hasNOTPermission(event.getPlayer(), event.getBlock().getLocation()));
+        event.setCancelled(claimContainer.hasNOTPermission(event.getPlayer(), event.getBlock().getLocation()));
     }
 
     @EventHandler
@@ -88,7 +89,7 @@ public class ClaimGuard implements Listener {
         for (Block block : blocks) {
             if (block.getType() == Material.AIR) continue;
 
-            if (isInAnyClaim(block.getLocation())) continue;
+            if (claimContainer.isInAnyClaim(block.getLocation())) continue;
 
             explodedBlocks.add(block);
         }
@@ -102,7 +103,7 @@ public class ClaimGuard implements Listener {
         Entity defender = event.getEntity();
         // Don't prevent any damage to Monsters, Players and entities outside any claim.
         if (defender instanceof Monster || defender instanceof Player) return;
-        if (!isInAnyClaim(defender.getLocation())) return;
+        if (!claimContainer.isInAnyClaim(defender.getLocation())) return;
 
         // Prevent tnt, creeper and any explosive entity damage
         DamageCause cause = event.getCause();
@@ -122,6 +123,6 @@ public class ClaimGuard implements Listener {
         }
         if (attacker == null) return;
 
-        event.setCancelled(hasNOTPermission(attacker, defender.getLocation()));
+        event.setCancelled(claimContainer.hasNOTPermission(attacker, defender.getLocation()));
     }
 }

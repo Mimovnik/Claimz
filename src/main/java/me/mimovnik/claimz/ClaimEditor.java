@@ -1,6 +1,9 @@
 package me.mimovnik.claimz;
 
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -12,68 +15,26 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static me.mimovnik.claimz.Claim.getClaimAt;
-import static me.mimovnik.claimz.Claim.hasNOTPermission;
 
 public class ClaimEditor implements Listener {
     private UUID ownerID;
     private Location firstVertex, secondVertex;
     private boolean isHoldingEditorTool = false;
     private Material editorTool = Material.STICK;
-    private ArrayList<Claim> claims;
-    private ScheduledExecutorService particleRenderer = Executors.newSingleThreadScheduledExecutor();
     private Claim claimToEdit;
     private Location opposingVertex;
-    private static final double maxClaimDisplayDistance = 500;
-    private boolean showClaims;
+    private ClaimRenderer renderer;
+    private ClaimContainer claimContainer;
 
-    public ClaimEditor(ArrayList<Claim> claims, UUID ownerID) {
+    public ClaimEditor(ClaimContainer claimContainer, ClaimRenderer renderer, UUID ownerID) {
         this.ownerID = ownerID;
-        this.claims = claims;
-        particleRenderer.scheduleAtFixedRate(this::displayClaims, 0, 500, MILLISECONDS);
+        this.claimContainer = claimContainer;
+        this.renderer = renderer;
     }
 
     public UUID getOwnerID() {
         return ownerID;
-    }
-
-    public boolean getShowClaims(){
-        return showClaims;
-    }
-
-    public void setShowClaims(boolean showClaims){
-        this.showClaims = showClaims;
-    }
-
-    private void displayClaims() {
-        if (isHoldingEditorTool || showClaims) {
-            Color color;
-            for (Claim claim : claims) {
-                Location claimCenter = claim.getCenter();
-                Location playerPos = Bukkit.getPlayer(ownerID).getLocation();
-                double distanceSqr = Math.pow((claimCenter.getBlockX() - playerPos.getBlockX()), 2) +
-                        Math.pow((claimCenter.getBlockY() - playerPos.getBlockY()), 2) +
-                        Math.pow((claimCenter.getBlockZ() - playerPos.getBlockZ()), 2);
-
-                if (distanceSqr >= Math.pow(maxClaimDisplayDistance, 2)) {
-                    continue;
-                }
-
-                if (claim.getOwnerID().equals(ownerID)) {
-                    color = Color.LIME;
-                } else {
-                    color = Color.RED;
-                }
-
-                claim.display(color);
-            }
-        }
     }
 
     @EventHandler
@@ -97,6 +58,12 @@ public class ClaimEditor implements Listener {
         } else {
             isHoldingEditorTool = false;
         }
+
+        if (isHoldingEditorTool) {
+            renderer.show(player);
+        } else {
+            renderer.hide(player);
+        }
     }
 
     @EventHandler
@@ -112,7 +79,7 @@ public class ClaimEditor implements Listener {
             }
             if (action == Action.RIGHT_CLICK_BLOCK) {
                 Block block = event.getClickedBlock();
-                if (hasNOTPermission(player, block.getLocation())) {
+                if (claimContainer.hasNOTPermission(player, block.getLocation())) {
                     return;
                 }
 
@@ -123,7 +90,7 @@ public class ClaimEditor implements Listener {
                     return;
                 }
 
-                Claim clicked = getClaimAt(block.getLocation());
+                Claim clicked = claimContainer.getClaimAt(block.getLocation());
                 if (firstVertex == null && clicked != null && clicked.isVertex(block.getLocation())) {
                     claimToEdit = clicked;
                     opposingVertex = clicked.getOpposingVertex(block.getLocation());
@@ -143,7 +110,7 @@ public class ClaimEditor implements Listener {
             secondVertex = block.getLocation();
             player.sendMessage("Second vertex set to:" + block.getLocation());
             Claim newClaim = new Claim(firstVertex, secondVertex, player.getWorld().getUID(), player.getUniqueId());
-            for (Claim claim : claims) {
+            for (Claim claim : claimContainer.getAllClaims()) {
                 if (newClaim.intersects(claim) && newClaim.getOwnerID() != claim.getOwnerID()) {
                     player.sendMessage(ChatColor.RED + "This claim would intersect with " +
                             ChatColor.ITALIC + "" + ChatColor.YELLOW + Bukkit.getOfflinePlayer(claim.getOwnerID()).getName() +
@@ -153,7 +120,7 @@ public class ClaimEditor implements Listener {
                 }
             }
             player.sendMessage("Claim set to" + newClaim);
-            claims.add(newClaim);
+            claimContainer.add(newClaim);
             newClaim.saveToFile();
             firstVertex = null;
             secondVertex = null;
