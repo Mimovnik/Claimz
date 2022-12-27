@@ -44,19 +44,14 @@ public class ClaimEditor implements Listener {
         }
         Player player = event.getPlayer();
         ItemStack item = player.getInventory().getItem(event.getNewSlot());
-        if (item == null) {
+        if (item == null || !item.getType().equals(editorTool)) {
             isHoldingEditorTool = false;
-            return;
-        }
-
-        if (item.getType().equals(editorTool)) {
+        } else {
             player.sendMessage(ChatColor.YELLOW + "(All with editor tool in main hand)");
             player.sendMessage(ChatColor.YELLOW + "To claim right click two opposing vertices of a prism.");
             player.sendMessage(ChatColor.YELLOW + "To edit right click existing vertex.");
             player.sendMessage(ChatColor.YELLOW + "To cancel left click anywhere.");
             isHoldingEditorTool = true;
-        } else {
-            isHoldingEditorTool = false;
         }
 
         if (isHoldingEditorTool) {
@@ -111,7 +106,7 @@ public class ClaimEditor implements Listener {
             player.sendMessage("Second vertex set to:" + block.getLocation());
             Claim newClaim = new Claim(firstVertex, secondVertex, player.getWorld().getUID(), player.getUniqueId());
             for (Claim claim : claimContainer.getAllClaims()) {
-                if (newClaim.intersects(claim) && newClaim.getOwnerID() != claim.getOwnerID()) {
+                if (newClaim.intersects(claim) && !claim.hasPermission(player)) {
                     player.sendMessage(ChatColor.RED + "This claim would intersect with " +
                             ChatColor.ITALIC + "" + ChatColor.YELLOW + Bukkit.getOfflinePlayer(claim.getOwnerID()).getName() +
                             ChatColor.RED + "'s claim. Choose another vertex.");

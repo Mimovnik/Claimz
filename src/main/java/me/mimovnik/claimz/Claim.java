@@ -1,6 +1,7 @@
 package me.mimovnik.claimz;
 
 import org.bukkit.*;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -144,6 +145,10 @@ public class Claim {
                 maxY > other.minY &&
                 minZ < other.maxZ &&
                 maxZ > other.minZ;
+    }
+
+    public boolean hasPermission(Player player){
+        return player.getUniqueId().equals(ownerID);
     }
 
     public void display(Color color) {

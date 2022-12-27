@@ -21,8 +21,8 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 public class ClaimRenderer implements CommandExecutor {
     private final ClaimContainer claimContainer;
     private static final int maxClaimDisplayDistance = 500;
-    private final List<Player> normalRenderPlayers = new ArrayList<>();
-    private final List<Player> forcedRenderPlayers = new ArrayList<>();
+    private final Set<Player> normalRenderPlayers = new HashSet<>();
+    private final Set<Player> forcedRenderPlayers = new HashSet<>();
 
     public ClaimRenderer(ClaimContainer claimContainer) {
         this.claimContainer = claimContainer;
