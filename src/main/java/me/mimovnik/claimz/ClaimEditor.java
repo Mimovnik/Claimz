@@ -1,5 +1,6 @@
 package me.mimovnik.claimz;
 
+import me.mimovnik.claimz.ClaimCubeFactory.Unit;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -13,9 +14,12 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
+
+import static me.mimovnik.claimz.ClaimCubeFactory.Unit.*;
 
 public class ClaimEditor implements Listener {
     private UUID ownerID;
@@ -26,11 +30,13 @@ public class ClaimEditor implements Listener {
     private Location opposingVertex;
     private ClaimRenderer renderer;
     private ClaimContainer claimContainer;
+    private ClaimCubeFactory factory;
 
-    public ClaimEditor(ClaimContainer claimContainer, ClaimRenderer renderer, UUID ownerID) {
+    public ClaimEditor(ClaimContainer claimContainer, ClaimRenderer renderer, UUID ownerID, ClaimCubeFactory factory) {
         this.ownerID = ownerID;
         this.claimContainer = claimContainer;
         this.renderer = renderer;
+        this.factory = factory;
     }
 
     public UUID getOwnerID() {
@@ -114,6 +120,15 @@ public class ClaimEditor implements Listener {
                     return;
                 }
             }
+            int cost = newClaim.getVolume();
+            if (hasEnoughCubes(player, cost)) {
+//                payCubes(player, cost);
+            } else {
+                player.sendMessage(ChatColor.RED + "You don't have enough cubes. This claim costs: " + cost + " cubes.");
+                player.sendMessage(ChatColor.YELLOW + "Choose another vertex or cancel.");
+                secondVertex = null;
+                return;
+            }
             player.sendMessage("Claim set to" + newClaim);
             claimContainer.add(newClaim);
             newClaim.saveToFile();
@@ -122,10 +137,33 @@ public class ClaimEditor implements Listener {
         }
     }
 
+    private boolean hasEnoughCubes(Player player, int cost) {
+        PlayerInventory inventory = player.getInventory();
+
+        int cubesInInventory = 0;
+        for (ItemStack item : inventory.getContents()) {
+            if(item == null || !factory.isCube(item)){
+                continue;
+            }
+            Unit unit = factory.whatUnit(item);
+
+            if(unit == UNITS){
+              cubesInInventory += 1 * item.getAmount();
+            }else if(unit == NINES){
+                cubesInInventory += 9 * item.getAmount();
+            }else if(unit == EIGHTY_ONES){
+                cubesInInventory += 81 * item.getAmount();
+            }
+
+        }
+        return cubesInInventory >= cost;
+    }
+
     private void cancelSetup(@NotNull Player player) {
         player.sendMessage("Claim setup canceled.");
         firstVertex = null;
         secondVertex = null;
+        claimToEdit = null;
     }
 
 }

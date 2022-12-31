@@ -2,7 +2,11 @@ package me.mimovnik.claimz;
 
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
@@ -10,10 +14,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClaimCubeFactory {
-    private Material unitsMaterial = Material.WHITE_STAINED_GLASS;
-    private Material ninesMaterial = Material.LIGHT_BLUE_STAINED_GLASS;
-    private Material eightyonesMaterial = Material.PURPLE_STAINED_GLASS;
+public class ClaimCubeFactory implements CommandExecutor {
+    private final Material unitsMaterial = Material.WHITE_STAINED_GLASS;
+    private final Material ninesMaterial = Material.LIGHT_BLUE_STAINED_GLASS;
+    private final Material eightyonesMaterial = Material.PURPLE_STAINED_GLASS;
 
     public List<Recipe> getRecipes() {
         List<Recipe> recipes = new ArrayList<>();
@@ -45,6 +49,21 @@ public class ClaimCubeFactory {
         recipes.add(fromEightyonesToNines);
 
         return recipes;
+    }
+
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        if (sender instanceof Player player) {
+            int amount = Integer.parseInt(args[0]);
+
+            player.getInventory().addItem(getCubeStack(amount, Unit.EIGHTY_ONES));
+            return true;
+        }
+//        if (args.length >= 0) {
+//            return false;
+//        }
+        sender.sendMessage("This command can only be issued if you're a player.");
+        return true;
     }
 
     public enum Unit {
@@ -85,6 +104,21 @@ public class ClaimCubeFactory {
         return cubes;
     }
 
+    public Unit whatUnit(ItemStack itemStack) {
+        Material type = itemStack.getType();
+
+        if (type == unitsMaterial) {
+            return Unit.UNITS;
+        }
+        if (type == ninesMaterial) {
+            return Unit.NINES;
+        }
+        if (type == eightyonesMaterial) {
+            return Unit.EIGHTY_ONES;
+        }
+
+        return null;
+    }
 
     public boolean isCube(ItemStack itemStack) {
         Material type = itemStack.getType();

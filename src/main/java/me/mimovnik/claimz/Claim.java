@@ -147,7 +147,7 @@ public class Claim {
                 maxZ > other.minZ;
     }
 
-    public boolean hasPermission(Player player){
+    public boolean hasPermission(Player player) {
         return player.getUniqueId().equals(ownerID);
     }
 
@@ -241,5 +241,12 @@ public class Claim {
 
         minZ = Math.min(firstVertex.getBlockZ(), secondVertex.getBlockZ());
         maxZ = Math.max(firstVertex.getBlockZ(), secondVertex.getBlockZ());
+    }
+
+    public int getVolume() {
+        int edgeX = maxX - minX + 1;
+        int edgeY = maxY - minY + 1;
+        int edgeZ = maxZ - minZ + 1;
+        return edgeX * edgeY * edgeZ;
     }
 }

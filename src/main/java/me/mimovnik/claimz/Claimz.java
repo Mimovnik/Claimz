@@ -1,6 +1,7 @@
 package me.mimovnik.claimz;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -27,14 +28,16 @@ public final class Claimz extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         PluginManager pluginManager = getServer().getPluginManager();
-        claimContainer = ClaimContainer.loadFromFile(pluginManager.getPlugin("Claimz").getDataFolder());
+        claimContainer = ClaimContainer.loadFromFile(getDataFolder());
 
+        factory = new ClaimCubeFactory();
         renderer = new ClaimRenderer(claimContainer);
+
         pluginManager.registerEvents(new ClaimGuard(claimContainer), this);
         pluginManager.registerEvents(this, this);
         getCommand("deleteClaim").setExecutor(new DeleteClaim(claimContainer));
         getCommand("toggleShowClaims").setExecutor(new ClaimRenderer(claimContainer));
-        factory = new ClaimCubeFactory();
+        getCommand("giveCubes").setExecutor(factory);
 
         for (Recipe recipe : factory.getRecipes()) {
             getServer().addRecipe(recipe);
@@ -43,13 +46,16 @@ public final class Claimz extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        event.getPlayer().getWorld().dropItem(event.getPlayer().getLocation(), factory.getCubeStack(1, EIGHTY_ONES));
+        Player player = event.getPlayer();
+        if (!player.hasPlayedBefore()) {
+            player.getInventory().addItem(factory.getCubeStack(32, EIGHTY_ONES));
+        }
 
-        UUID uniqueId = event.getPlayer().getUniqueId();
+        UUID uniqueId = player.getUniqueId();
         claimEditors.computeIfAbsent(uniqueId, (key) -> {
-            ClaimEditor claimEditor = new ClaimEditor(claimContainer, renderer, key);
+            ClaimEditor claimEditor = new ClaimEditor(claimContainer, renderer, key, factory);
             getServer().getPluginManager().registerEvents(claimEditor, this);
-            Bukkit.getServer().getLogger().log(Level.INFO, "Claimz: Successfully created a new claim editor for " + event.getPlayer().getName());
+            Bukkit.getServer().getLogger().log(Level.INFO, "Claimz: Successfully created a new claim editor for " + player.getName());
             return claimEditor;
         });
     }

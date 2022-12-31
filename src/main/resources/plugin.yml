@@ -11,3 +11,6 @@ commands:
   toggleShowClaims:
     description: Toggles the display of nearby claims.
     usage: /<command> <- without any arguments
+  giveCubes:
+    description: Gives certain amount of cubes to a sender
+    usage: /<command> amount
