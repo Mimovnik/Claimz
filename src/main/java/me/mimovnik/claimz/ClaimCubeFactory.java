@@ -14,6 +14,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+import static me.mimovnik.claimz.ClaimCubeFactory.Unit.*;
+
 public class ClaimCubeFactory implements CommandExecutor {
     private final Material unitsMaterial = Material.WHITE_STAINED_GLASS;
     private final Material ninesMaterial = Material.LIGHT_BLUE_STAINED_GLASS;
@@ -28,10 +30,10 @@ public class ClaimCubeFactory implements CommandExecutor {
                 "111",
                 "111"
         );
-        fromUnitsToNines.setIngredient('1', new RecipeChoice.ExactChoice(getCubeStack(1, Unit.UNITS)));
+        fromUnitsToNines.setIngredient('1', new RecipeChoice.ExactChoice(getCubeStack(1, UNITS)));
         recipes.add(fromUnitsToNines);
 
-        ShapelessRecipe fromNinesToUnits = new ShapelessRecipe(NamespacedKey.minecraft("from_nines_to_units"), getCubeStack(9, Unit.UNITS));
+        ShapelessRecipe fromNinesToUnits = new ShapelessRecipe(NamespacedKey.minecraft("from_nines_to_units"), getCubeStack(9, UNITS));
         fromNinesToUnits.addIngredient(new RecipeChoice.ExactChoice(getCubeStack(1, Unit.NINES)));
         recipes.add(fromNinesToUnits);
 
@@ -105,10 +107,13 @@ public class ClaimCubeFactory implements CommandExecutor {
     }
 
     public Unit whatUnit(ItemStack itemStack) {
+        if(itemStack == null){
+            return null;
+        }
         Material type = itemStack.getType();
 
         if (type == unitsMaterial) {
-            return Unit.UNITS;
+            return UNITS;
         }
         if (type == ninesMaterial) {
             return Unit.NINES;
@@ -120,7 +125,53 @@ public class ClaimCubeFactory implements CommandExecutor {
         return null;
     }
 
+
+    int countCubes(Player player) {
+        PlayerInventory inventory = player.getInventory();
+
+        int cubesInInventory = 0;
+        for (ItemStack item : inventory.getContents()) {
+            if (!isCube(item)) {
+                continue;
+            }
+            Unit unit = whatUnit(item);
+
+            if (unit == UNITS) {
+                cubesInInventory += item.getAmount();
+            } else if (unit == NINES) {
+                cubesInInventory += 9 * item.getAmount();
+            } else if (unit == EIGHTY_ONES) {
+                cubesInInventory += 81 * item.getAmount();
+            }
+
+        }
+        return cubesInInventory;
+    }
+    void balanceCubes(Player player, int amountAfterTransaction) {
+        PlayerInventory inventory = player.getInventory();
+        // Remove all cubes
+        for (ItemStack item : inventory.getContents()) {
+            if (isCube(item)) {
+                inventory.remove(item);
+            }
+        }
+
+        int numberOfEightyones = amountAfterTransaction / 81;
+        amountAfterTransaction -= numberOfEightyones * 81;
+        int numberOfNines = amountAfterTransaction / 9;
+        amountAfterTransaction -= numberOfNines * 9;
+        int numberOfUnits = amountAfterTransaction;
+
+        // Add amountAfterTransaction cubes
+        inventory.addItem(getCubeStack(numberOfEightyones, EIGHTY_ONES));
+        inventory.addItem(getCubeStack(numberOfNines, NINES));
+        inventory.addItem(getCubeStack(numberOfUnits, UNITS));
+    }
+
     public boolean isCube(ItemStack itemStack) {
+        if(itemStack == null){
+            return false;
+        }
         Material type = itemStack.getType();
         ItemMeta itemMeta = itemStack.getItemMeta();
         return (type == unitsMaterial

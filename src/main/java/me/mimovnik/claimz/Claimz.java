@@ -35,7 +35,7 @@ public final class Claimz extends JavaPlugin implements Listener {
 
         pluginManager.registerEvents(new ClaimGuard(claimContainer), this);
         pluginManager.registerEvents(this, this);
-        getCommand("deleteClaim").setExecutor(new DeleteClaim(claimContainer));
+        getCommand("deleteClaim").setExecutor(new DeleteClaim(claimContainer, factory));
         getCommand("toggleShowClaims").setExecutor(new ClaimRenderer(claimContainer));
         getCommand("giveCubes").setExecutor(factory);
 

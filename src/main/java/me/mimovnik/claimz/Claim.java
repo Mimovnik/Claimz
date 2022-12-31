@@ -20,6 +20,10 @@ public class Claim {
     private UUID worldID;
     private UUID ownerID;
 
+    public UUID getWorldID(){
+        return  worldID;
+    }
+
     public Claim(@NotNull Location firstVertex, @NotNull Location secondVertex, UUID worldID, UUID ownerID) {
         claimID = UUID.randomUUID();
         this.worldID = worldID;

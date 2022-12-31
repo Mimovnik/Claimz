@@ -21,7 +21,7 @@ import java.util.UUID;
 
 import static me.mimovnik.claimz.ClaimCubeFactory.Unit.*;
 
-public class ClaimEditor implements Listener {
+public class ClaimEditor implements Listener{
     private UUID ownerID;
     private Location firstVertex, secondVertex;
     private boolean isHoldingEditorTool = false;
@@ -85,8 +85,21 @@ public class ClaimEditor implements Listener {
                 }
 
                 if (claimToEdit != null) {
+                    int oldVolume = claimToEdit.getVolume();
+
+                    Claim newClaim = new Claim(block.getLocation(), opposingVertex, claimToEdit.getWorldID(), claimToEdit.getOwnerID());
+                    int newVolume = newClaim.getVolume();
+
+                    int cost = newVolume - oldVolume;
+                    int playerCubes = factory.countCubes(player);
+
+                    if (playerCubes < cost) {
+                        player.sendMessage(ChatColor.RED + "Cost: " + cost + " You cubes: " + playerCubes + " Need: " + (cost - playerCubes));
+                        return;
+                    }
                     claimToEdit.setNewBoundaries(block.getLocation(), opposingVertex);
                     claimToEdit.saveToFile();
+                    factory.balanceCubes(player, playerCubes - cost);
                     claimToEdit = null;
                     return;
                 }
@@ -120,15 +133,17 @@ public class ClaimEditor implements Listener {
                     return;
                 }
             }
+
             int cost = newClaim.getVolume();
-            if (hasEnoughCubes(player, cost)) {
-//                payCubes(player, cost);
+            int playerCubes = factory.countCubes(player);
+
+            if (playerCubes >= cost) {
+                factory.balanceCubes(player, playerCubes - cost);
             } else {
-                player.sendMessage(ChatColor.RED + "You don't have enough cubes. This claim costs: " + cost + " cubes.");
-                player.sendMessage(ChatColor.YELLOW + "Choose another vertex or cancel.");
-                secondVertex = null;
+                player.sendMessage(ChatColor.RED + "Cost: " + cost + " You cubes: " + playerCubes + " Need: " + (cost - playerCubes));
                 return;
             }
+
             player.sendMessage("Claim set to" + newClaim);
             claimContainer.add(newClaim);
             newClaim.saveToFile();
@@ -137,27 +152,6 @@ public class ClaimEditor implements Listener {
         }
     }
 
-    private boolean hasEnoughCubes(Player player, int cost) {
-        PlayerInventory inventory = player.getInventory();
-
-        int cubesInInventory = 0;
-        for (ItemStack item : inventory.getContents()) {
-            if(item == null || !factory.isCube(item)){
-                continue;
-            }
-            Unit unit = factory.whatUnit(item);
-
-            if(unit == UNITS){
-              cubesInInventory += 1 * item.getAmount();
-            }else if(unit == NINES){
-                cubesInInventory += 9 * item.getAmount();
-            }else if(unit == EIGHTY_ONES){
-                cubesInInventory += 81 * item.getAmount();
-            }
-
-        }
-        return cubesInInventory >= cost;
-    }
 
     private void cancelSetup(@NotNull Player player) {
         player.sendMessage("Claim setup canceled.");
