@@ -22,12 +22,12 @@ public class DeleteClaim implements CommandExecutor {
             return false;
         }
         if (sender instanceof Player player) {
-            if (claimContainer.hasNOTPermission(player, player.getLocation())) {
-                return true;
-            }
             Claim claim = claimContainer.getClaimAt(player.getLocation());
             if(claim == null){
                 sender.sendMessage("Cannot delete claim. Your not standing at any claim.");
+                return true;
+            }
+            if (claimContainer.hasNOTPermission(player, player.getLocation())) {
                 return true;
             }
 

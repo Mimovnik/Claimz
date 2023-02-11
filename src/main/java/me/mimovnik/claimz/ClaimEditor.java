@@ -1,6 +1,5 @@
 package me.mimovnik.claimz;
 
-import me.mimovnik.claimz.ClaimCubeFactory.Unit;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -14,12 +13,9 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
-
-import static me.mimovnik.claimz.ClaimCubeFactory.Unit.*;
 
 public class ClaimEditor implements Listener{
     private UUID ownerID;

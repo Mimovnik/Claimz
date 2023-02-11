@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 
-import static me.mimovnik.claimz.ClaimCubeFactory.Unit.*;
+import static me.mimovnik.claimz.ClaimCubeFactory.Unit.EIGHTY_ONES;
 
 public final class Claimz extends JavaPlugin implements Listener {
 
@@ -24,20 +24,24 @@ public final class Claimz extends JavaPlugin implements Listener {
     private ClaimRenderer renderer;
     private final Map<UUID, ClaimEditor> claimEditors = new HashMap<>();
     private ClaimCubeFactory factory;
+    private ClaimGuard claimGuard;
 
     @Override
     public void onEnable() {
         PluginManager pluginManager = getServer().getPluginManager();
         claimContainer = ClaimContainer.loadFromFile(getDataFolder());
+        claimGuard = new ClaimGuard(claimContainer);
 
         factory = new ClaimCubeFactory();
         renderer = new ClaimRenderer(claimContainer);
 
-        pluginManager.registerEvents(new ClaimGuard(claimContainer), this);
+
+        pluginManager.registerEvents(claimGuard, this);
         pluginManager.registerEvents(this, this);
         getCommand("deleteClaim").setExecutor(new DeleteClaim(claimContainer, factory));
         getCommand("toggleShowClaims").setExecutor(new ClaimRenderer(claimContainer));
         getCommand("giveCubes").setExecutor(factory);
+        getCommand("toggleGuardClaims").setExecutor(claimGuard);
 
         for (Recipe recipe : factory.getRecipes()) {
             getServer().addRecipe(recipe);
@@ -47,10 +51,12 @@ public final class Claimz extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+        // Give starting amount of cubes on first login
         if (!player.hasPlayedBefore()) {
             player.getInventory().addItem(factory.getCubeStack(32, EIGHTY_ONES));
         }
 
+        // Give every player his own Claim Editor
         UUID uniqueId = player.getUniqueId();
         claimEditors.computeIfAbsent(uniqueId, (key) -> {
             ClaimEditor claimEditor = new ClaimEditor(claimContainer, renderer, key, factory);

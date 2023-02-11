@@ -58,6 +58,10 @@ public class ClaimCubeFactory implements CommandExecutor {
         if (sender instanceof Player player) {
             int amount = Integer.parseInt(args[0]);
 
+            if (!player.hasPermission("claimz.toggleguardclaims")) {
+                sender.sendMessage("You don't have permission to do that.");
+                return true;
+            }
             player.getInventory().addItem(getCubeStack(amount, Unit.EIGHTY_ONES));
             return true;
         }
@@ -107,7 +111,7 @@ public class ClaimCubeFactory implements CommandExecutor {
     }
 
     public Unit whatUnit(ItemStack itemStack) {
-        if(itemStack == null){
+        if (itemStack == null) {
             return null;
         }
         Material type = itemStack.getType();
@@ -147,6 +151,7 @@ public class ClaimCubeFactory implements CommandExecutor {
         }
         return cubesInInventory;
     }
+
     void balanceCubes(Player player, int amountAfterTransaction) {
         PlayerInventory inventory = player.getInventory();
         // Remove all cubes
@@ -169,7 +174,7 @@ public class ClaimCubeFactory implements CommandExecutor {
     }
 
     public boolean isCube(ItemStack itemStack) {
-        if(itemStack == null){
+        if (itemStack == null) {
             return false;
         }
         Material type = itemStack.getType();

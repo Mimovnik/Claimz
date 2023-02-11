@@ -2,6 +2,9 @@ package me.mimovnik.claimz;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
@@ -18,42 +21,68 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import static org.bukkit.event.entity.EntityDamageEvent.DamageCause.ENTITY_EXPLOSION;
 
-public class ClaimGuard implements Listener {
+public class ClaimGuard implements Listener, CommandExecutor {
 
     private ClaimContainer claimContainer;
+    private boolean enabled = true;
 
     public ClaimGuard(ClaimContainer claimContainer) {
         this.claimContainer = claimContainer;
     }
 
+    public void enable(){
+        enabled = true;
+    }
+
+    public void disable(){
+        enabled = false;
+    }
+
     @EventHandler
     public void onBreakBlock(BlockBreakEvent event) {
+        if(!enabled){
+            return;
+        }
         event.setCancelled(claimContainer.hasNOTPermission(event.getPlayer(), event.getBlock().getLocation()));
     }
 
     @EventHandler
     public void onBucketFill(PlayerBucketFillEvent event) {
+        if(!enabled){
+            return;
+        }
         event.setCancelled(claimContainer.hasNOTPermission(event.getPlayer(), event.getBlock().getLocation()));
     }
 
     @EventHandler
     public void onPlaceBlock(BlockPlaceEvent event) {
+        if(!enabled){
+            return;
+        }
         event.setCancelled(claimContainer.hasNOTPermission(event.getPlayer(), event.getBlock().getLocation()));
     }
 
     @EventHandler
     public void onBucketEmpty(PlayerBucketEmptyEvent event) {
+        if(!enabled){
+            return;
+        }
         event.setCancelled(claimContainer.hasNOTPermission(event.getPlayer(), event.getBlock().getLocation()));
     }
 
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
+        if(!enabled){
+            return;
+        }
         if (event.getClickedBlock() == null) {
             return;
         }
@@ -65,6 +94,9 @@ public class ClaimGuard implements Listener {
 
     @EventHandler
     public void onLiquidBlockFlow(BlockFromToEvent event) {
+        if(!enabled){
+            return;
+        }
         Claim sourceBlockClaim = claimContainer.getClaimAt(event.getBlock().getLocation());
         Claim flowBlockClaim = claimContainer.getClaimAt(event.getToBlock().getLocation());
         // Flow can happen to any unclaimed block(From claimed to unclaimed)
@@ -77,11 +109,17 @@ public class ClaimGuard implements Listener {
 
     @EventHandler
     public void onMultiPlaceBlock(BlockMultiPlaceEvent event) {
+        if(!enabled){
+            return;
+        }
         event.setCancelled(claimContainer.hasNOTPermission(event.getPlayer(), event.getBlock().getLocation()));
     }
 
     @EventHandler
     public void onEntityExplode(EntityExplodeEvent event) {
+        if(!enabled){
+            return;
+        }
         List<Block> blocks = event.blockList();
 
         List<Block> explodedBlocks = new ArrayList<>();
@@ -99,7 +137,10 @@ public class ClaimGuard implements Listener {
     }
 
     @EventHandler
-    void onEntityByEntityDamage(EntityDamageByEntityEvent event) {
+    public void onEntityByEntityDamage(EntityDamageByEntityEvent event) {
+        if(!enabled){
+            return;
+        }
         Entity defender = event.getEntity();
         // Don't prevent any damage to Monsters, Players and entities outside any claim.
         if (defender instanceof Monster || defender instanceof Player) return;
@@ -124,5 +165,27 @@ public class ClaimGuard implements Listener {
         if (attacker == null) return;
 
         event.setCancelled(claimContainer.hasNOTPermission(attacker, defender.getLocation()));
+    }
+
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        if (args.length > 0) {
+            return false;
+        }
+        if(sender instanceof Player p){
+            if(!p.hasPermission("claimz.toggleguardclaims")){
+                sender.sendMessage("You don't have permission to do that.");
+                return true;
+            }
+        }
+        enabled = !enabled;
+        if(enabled){
+            sender.getServer().getLogger().log(Level.INFO, "Claimz: Claims are now enabled.");
+            sender.sendMessage("Claims are now enabled.");
+        }else{
+            sender.getServer().getLogger().log(Level.INFO, "Claimz: Claims are now disabled.");
+            sender.sendMessage("Claims are now disabled.");
+        }
+        return true;
     }
 }

@@ -14,3 +14,6 @@ commands:
   giveCubes:
     description: Gives certain amount of cubes to a sender
     usage: /<command> amount
+  toggleGuardClaims:
+    description: Toggles the guard of all claims.
+    usage: /<command> <- without any arguments
