@@ -20,8 +20,10 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
+import org.spigotmc.event.entity.EntityMountEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -134,6 +136,19 @@ public class ClaimGuard implements Listener, CommandExecutor {
 
         blocks.clear();
         blocks.addAll(explodedBlocks);
+    }
+
+    @EventHandler
+    public void onPlayerInteractEntity(EntityMountEvent event){
+        if(!enabled){
+            return;
+        }
+        Entity entity = event.getEntity();
+        if(entity instanceof  Player player){
+            if(claimContainer.hasNOTPermission(player, event.getMount().getLocation())){
+                event.setCancelled(true);
+            }
+        }
     }
 
     @EventHandler
