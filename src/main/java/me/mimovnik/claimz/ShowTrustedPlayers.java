@@ -8,38 +8,36 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.UUID;
 
-public class TrustPlayer implements CommandExecutor {
+
+public class ShowTrustedPlayers implements CommandExecutor {
     private ClaimContainer claimContainer;
 
-    public TrustPlayer(ClaimContainer claimContainer) {
+    public ShowTrustedPlayers(ClaimContainer claimContainer) {
         this.claimContainer = claimContainer;
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (args.length != 1) {
+        if (args.length != 0) {
             return false;
-        }
-        OfflinePlayer toTrust = Bukkit.getOfflinePlayer(args[0]);
-        if (!toTrust.hasPlayedBefore()) {
-            sender.sendMessage("There is no such player as " + args[0]);
-            return true;
         }
         if (sender instanceof Player player) {
             Claim claim = claimContainer.getClaimAt(player.getLocation());
             if (claim == null) {
-                sender.sendMessage("Cannot add trusted player. Your not standing at any claim.");
+                sender.sendMessage("Cannot show trusted players. Your not standing at any claim.");
                 return true;
             }
             if (claimContainer.hasNOTPermission(player, player.getLocation())) {
                 return true;
             }
-            if (claim.addTrustedId(toTrust.getUniqueId())) {
-                claim.saveToFile();
-                sender.sendMessage("Successfully trusted " + args[0]);
-            } else {
-                sender.sendMessage(args[0] + " is already a trusted member of this claim.");
+            sender.sendMessage("Owner: " + Bukkit.getOfflinePlayer(claim.getOwnerID()).getName());
+            if(claim.getTrusted().size() > 0){
+                sender.sendMessage("Trusted:");
+            }
+            for(UUID id : claim.getTrusted()){
+                sender.sendMessage(Bukkit.getOfflinePlayer(id).getName());
             }
 
             return true;

@@ -9,10 +9,10 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 
-public class TrustPlayer implements CommandExecutor {
+public class DistrustPlayer implements CommandExecutor {
     private ClaimContainer claimContainer;
 
-    public TrustPlayer(ClaimContainer claimContainer) {
+    public DistrustPlayer(ClaimContainer claimContainer) {
         this.claimContainer = claimContainer;
     }
 
@@ -21,25 +21,25 @@ public class TrustPlayer implements CommandExecutor {
         if (args.length != 1) {
             return false;
         }
-        OfflinePlayer toTrust = Bukkit.getOfflinePlayer(args[0]);
-        if (!toTrust.hasPlayedBefore()) {
+        OfflinePlayer toDistrust = Bukkit.getOfflinePlayer(args[0]);
+        if (!toDistrust.hasPlayedBefore()) {
             sender.sendMessage("There is no such player as " + args[0]);
             return true;
         }
         if (sender instanceof Player player) {
             Claim claim = claimContainer.getClaimAt(player.getLocation());
             if (claim == null) {
-                sender.sendMessage("Cannot add trusted player. Your not standing at any claim.");
+                sender.sendMessage("Cannot remove trusted player. Your not standing at any claim.");
                 return true;
             }
             if (claimContainer.hasNOTPermission(player, player.getLocation())) {
                 return true;
             }
-            if (claim.addTrustedId(toTrust.getUniqueId())) {
+            if (claim.removeTrustedId(toDistrust.getUniqueId())) {
                 claim.saveToFile();
-                sender.sendMessage("Successfully trusted " + args[0]);
+                sender.sendMessage("Successfully distrusted " + args[0]);
             } else {
-                sender.sendMessage(args[0] + " is already a trusted member of this claim.");
+                sender.sendMessage(args[0] + " is not a trusted member of this claim.");
             }
 
             return true;

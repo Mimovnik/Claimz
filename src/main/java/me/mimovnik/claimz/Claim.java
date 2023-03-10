@@ -63,6 +63,18 @@ public class Claim {
         return true;
     }
 
+    public boolean removeTrustedId(UUID id) {
+        if (trusted.contains(id)) {
+            trusted.remove(id);
+            return true;
+        }
+        return false;
+    }
+
+    public List<UUID> getTrusted(){
+        return trusted;
+    }
+
     public Location getCenter() {
         return new Location(Bukkit.getWorld(worldID), (float) (minX + maxX) / 2, (float) (minY + maxY) / 2, (float) (minZ + maxZ) / 2);
     }

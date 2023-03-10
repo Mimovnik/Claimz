@@ -43,6 +43,8 @@ public final class Claimz extends JavaPlugin implements Listener {
         getCommand("giveCubes").setExecutor(factory);
         getCommand("toggleGuardClaims").setExecutor(claimGuard);
         getCommand("trust").setExecutor(new TrustPlayer(claimContainer));
+        getCommand("distrust").setExecutor(new DistrustPlayer(claimContainer));
+        getCommand("showTrusted").setExecutor(new ShowTrustedPlayers(claimContainer));
 
         for (Recipe recipe : factory.getRecipes()) {
             getServer().addRecipe(recipe);

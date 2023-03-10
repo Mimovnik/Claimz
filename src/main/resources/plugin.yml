@@ -20,3 +20,9 @@ commands:
   trust:
     description: Grants a player access to the claim the sender is currently standing in.
     usage: /<command> [player]
+  distrust:
+    description: Removes access from a player to the claim the sender is currently standing in.
+    usage: /<command> [player]
+  showTrusted:
+    description: Lists trusted players of the claim the sender is currently standing in.
+    usage: /<command>
