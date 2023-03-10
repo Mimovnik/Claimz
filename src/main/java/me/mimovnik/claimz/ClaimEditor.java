@@ -5,19 +5,27 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-public class ClaimEditor implements Listener{
+import static org.bukkit.event.inventory.InventoryAction.*;
+
+public class ClaimEditor implements Listener {
     private UUID ownerID;
     private Location firstVertex, secondVertex;
     private boolean isHoldingEditorTool = false;
@@ -39,20 +47,51 @@ public class ClaimEditor implements Listener{
         return ownerID;
     }
 
+    private void sendTips(Player player) {
+        player.sendMessage(ChatColor.YELLOW + "To claim right click two opposing vertices of a prism.");
+        player.sendMessage(ChatColor.YELLOW + "To edit right click existing vertex.");
+        player.sendMessage(ChatColor.YELLOW + "To cancel left click anywhere.");
+    }
+
     @EventHandler
-    public void onPlayerItemHeld(@NotNull PlayerItemHeldEvent event) {
-        if (!event.getPlayer().getUniqueId().equals(ownerID)) {
+    public void onInventoryClickEvent(InventoryClickEvent event) {
+        if (event.getWhoClicked() instanceof Player player) {
+            if (!player.getUniqueId().equals((ownerID))) {
+                return;
+            }
+            int offHandSlotIndex = 40;
+            InventoryAction action = event.getAction();
+            if ((action == PLACE_ALL
+                    || action == PLACE_ONE
+                    || action == SWAP_WITH_CURSOR)
+                    && event.getSlot() == offHandSlotIndex) {
+                checkIfHoldingTool(player, event.getCursor());
+                return;
+            }
+            if ((action == PICKUP_ALL
+                    || action == PICKUP_ONE)
+                    && event.getSlot() == offHandSlotIndex) {
+                player.sendMessage("Pickup from offhand" + event.getSlot());
+                checkIfHoldingTool(player, null);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onSwapHandItems(PlayerSwapHandItemsEvent event) {
+        Player player = event.getPlayer();
+        if (!player.getUniqueId().equals(ownerID)) {
             return;
         }
-        Player player = event.getPlayer();
-        ItemStack item = player.getInventory().getItem(event.getNewSlot());
+        ItemStack item = event.getOffHandItem();
+        checkIfHoldingTool(player, item);
+    }
+
+    private void checkIfHoldingTool(Player player, ItemStack item) {
         if (item == null || !item.getType().equals(editorTool)) {
             isHoldingEditorTool = false;
         } else {
-            player.sendMessage(ChatColor.YELLOW + "(All with editor tool in main hand)");
-            player.sendMessage(ChatColor.YELLOW + "To claim right click two opposing vertices of a prism.");
-            player.sendMessage(ChatColor.YELLOW + "To edit right click existing vertex.");
-            player.sendMessage(ChatColor.YELLOW + "To cancel left click anywhere.");
+            sendTips(player);
             isHoldingEditorTool = true;
         }
 
@@ -69,7 +108,7 @@ public class ClaimEditor implements Listener{
             return;
         }
         Player player = event.getPlayer();
-        if (isHoldingEditorTool && event.getHand() == EquipmentSlot.HAND) {
+        if (isHoldingEditorTool && event.getHand() == EquipmentSlot.OFF_HAND) {
             Action action = event.getAction();
             if (action == Action.LEFT_CLICK_BLOCK || action == Action.LEFT_CLICK_AIR) {
                 cancelSetup(player);
