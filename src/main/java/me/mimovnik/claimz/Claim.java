@@ -7,6 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -19,15 +21,17 @@ public class Claim {
     private UUID claimID;
     private UUID worldID;
     private UUID ownerID;
+    private List<UUID> trusted;
 
-    public UUID getWorldID(){
-        return  worldID;
+    public UUID getWorldID() {
+        return worldID;
     }
 
     public Claim(@NotNull Location firstVertex, @NotNull Location secondVertex, UUID worldID, UUID ownerID) {
         claimID = UUID.randomUUID();
         this.worldID = worldID;
         this.ownerID = ownerID;
+        trusted = new ArrayList<>();
         minX = Math.min(firstVertex.getBlockX(), secondVertex.getBlockX());
         maxX = Math.max(firstVertex.getBlockX(), secondVertex.getBlockX());
 
@@ -38,7 +42,7 @@ public class Claim {
         maxZ = Math.max(firstVertex.getBlockZ(), secondVertex.getBlockZ());
     }
 
-    public Claim(UUID claimID, int minX, int maxX, int minY, int maxY, int minZ, int maxZ, UUID worldID, UUID ownerID) {
+    public Claim(UUID claimID, int minX, int maxX, int minY, int maxY, int minZ, int maxZ, UUID worldID, UUID ownerID, List<UUID> trusted) {
         this.claimID = claimID;
         this.minX = minX;
         this.maxX = maxX;
@@ -48,12 +52,20 @@ public class Claim {
         this.maxZ = maxZ;
         this.worldID = worldID;
         this.ownerID = ownerID;
+        this.trusted = trusted;
+    }
+
+    public boolean addTrustedId(UUID id) {
+        if (trusted.contains(id) || ownerID == id) {
+            return false;
+        }
+        trusted.add(id);
+        return true;
     }
 
     public Location getCenter() {
         return new Location(Bukkit.getWorld(worldID), (float) (minX + maxX) / 2, (float) (minY + maxY) / 2, (float) (minZ + maxZ) / 2);
     }
-
 
     public void saveToFile() {
         try {
@@ -99,7 +111,9 @@ public class Claim {
 
         File tempFile = new File(dataFile + "temp");
 
+        // Remove old data
         createNewFileWithoutThisClaim(dataFile, tempFile);
+        // Insert new data
         appendClaimData(tempFile);
 
         dataFile.delete();
@@ -152,7 +166,7 @@ public class Claim {
     }
 
     public boolean hasPermission(Player player) {
-        return player.getUniqueId().equals(ownerID);
+        return player.getUniqueId().equals(ownerID) || trusted.contains(player.getUniqueId());
     }
 
     public void display(Color color) {
@@ -196,7 +210,7 @@ public class Claim {
     }
 
     private String toSaveFormat() {
-        return claimID +
+        String saveFormat = claimID +
                 ";" + minX +
                 ";" + maxX +
                 ";" + minY +
@@ -205,6 +219,10 @@ public class Claim {
                 ";" + maxZ +
                 ";" + worldID +
                 ";" + ownerID;
+        for (UUID trust : trusted) {
+            saveFormat += ";" + trust;
+        }
+        return saveFormat;
     }
 
     public UUID getOwnerID() {

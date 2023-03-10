@@ -6,14 +6,17 @@ authors: [ Mimovnik ]
 description: Allow players to claim land where you cannot be griefed.
 commands:
   deleteClaim:
-    description: Deletes the claim a sender is currently standing in.
-    usage: /<command> <- without any arguments
+    description: Deletes the claim the sender is currently standing in.
+    usage: /<command>
   toggleShowClaims:
     description: Toggles the display of nearby claims.
-    usage: /<command> <- without any arguments
+    usage: /<command>
   giveCubes:
     description: Gives certain amount of cubes to a sender
-    usage: /<command> amount
+    usage: /<command> [amount]
   toggleGuardClaims:
     description: Toggles the guard of all claims.
-    usage: /<command> <- without any arguments
+    usage: /<command>
+  trust:
+    description: Grants a player access to the claim the sender is currently standing in.
+    usage: /<command> [player]

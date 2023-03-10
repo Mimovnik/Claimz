@@ -58,10 +58,10 @@ public class ClaimEditor implements Listener {
         if (item == null || !item.getType().equals(editorTool)) {
             isHoldingEditorTool = false;
         } else {
-            player.sendMessage(ChatColor.YELLOW + "(All with editor tool in main hand)");
-            player.sendMessage(ChatColor.YELLOW + "To claim right click two opposing vertices of a prism.");
-            player.sendMessage(ChatColor.YELLOW + "To edit right click existing vertex.");
-            player.sendMessage(ChatColor.YELLOW + "To cancel left click anywhere.");
+//            player.sendMessage(ChatColor.YELLOW + "(All with editor tool in main hand)");
+//            player.sendMessage(ChatColor.YELLOW + "To claim right click two opposing vertices of a prism.");
+//            player.sendMessage(ChatColor.YELLOW + "To edit right click existing vertex.");
+//            player.sendMessage(ChatColor.YELLOW + "To cancel left click anywhere.");
             isHoldingEditorTool = true;
         }
 

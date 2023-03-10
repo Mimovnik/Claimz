@@ -36,7 +36,7 @@ public class ClaimContainer {
 
     public boolean hasNOTPermission(@NotNull Player player, @NotNull Location location) {
         for (Claim claim : claims) {
-            if (claim.contains(location) && !player.getUniqueId().equals(claim.getOwnerID())) {
+            if (claim.contains(location) && !claim.hasPermission(player)) {
                 player.sendMessage(ChatColor.RED + "You don't have permission to do that. It's " +
                         ChatColor.ITALIC + "" + ChatColor.YELLOW + Bukkit.getOfflinePlayer(claim.getOwnerID()).getName() + ChatColor.RED + "'s claim.");
                 return true;
@@ -75,8 +75,8 @@ public class ClaimContainer {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 String[] data = line.split(";");
-                int dataCount = 9;
-                if (data.length != dataCount) {
+                int minDataCount = 9;
+                if (data.length < minDataCount) {
                     throw new RuntimeException("Corrupted line of save data in this line '" + line + "' of this file '" + dataFile + "'.");
                 }
                 UUID claimID = UUID.fromString(data[0]);
@@ -88,8 +88,12 @@ public class ClaimContainer {
                 int maxZ = Integer.parseInt(data[6]);
                 UUID worldID = UUID.fromString(data[7]);
                 UUID ownerID = UUID.fromString(data[8]);
+                List<UUID> trusted = new ArrayList<>(data.length - minDataCount);
+                for (int i = minDataCount; i < data.length; i++) {
+                    trusted.add(UUID.fromString(data[i]));
+                }
 
-                loaded.add(new Claim(claimID, minX, maxX, minY, maxY, minZ, maxZ, worldID, ownerID));
+                loaded.add(new Claim(claimID, minX, maxX, minY, maxY, minZ, maxZ, worldID, ownerID, trusted));
             }
         }
 
