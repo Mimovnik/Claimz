@@ -55,6 +55,9 @@ public class ClaimCubeFactory implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        if (args.length != 1) {
+            return false;
+        }
         if (sender instanceof Player player) {
             int amount = Integer.parseInt(args[0]);
 
@@ -65,9 +68,6 @@ public class ClaimCubeFactory implements CommandExecutor {
             player.getInventory().addItem(getCubeStack(amount, Unit.EIGHTY_ONES));
             return true;
         }
-//        if (args.length >= 0) {
-//            return false;
-//        }
         sender.sendMessage("This command can only be issued if you're a player.");
         return true;
     }

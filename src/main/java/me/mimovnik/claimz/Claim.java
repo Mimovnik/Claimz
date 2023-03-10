@@ -56,7 +56,7 @@ public class Claim {
     }
 
     public boolean addTrustedId(UUID id) {
-        if (trusted.contains(id) || ownerID == id) {
+        if (trusted.contains(id) || ownerID.equals(id)) {
             return false;
         }
         trusted.add(id);
