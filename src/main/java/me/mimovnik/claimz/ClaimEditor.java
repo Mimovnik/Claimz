@@ -9,6 +9,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -18,7 +20,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-public class ClaimEditor implements Listener{
+import static org.bukkit.event.inventory.InventoryAction.*;
+
+public class ClaimEditor implements Listener {
     private UUID ownerID;
     private Location firstVertex, secondVertex;
     private boolean isHoldingEditorTool = false;
@@ -47,6 +51,10 @@ public class ClaimEditor implements Listener{
         }
         Player player = event.getPlayer();
         ItemStack item = player.getInventory().getItem(event.getNewSlot());
+        checkHeldItem(player, item);
+    }
+
+    private void checkHeldItem(Player player, ItemStack item) {
         if (item == null || !item.getType().equals(editorTool)) {
             isHoldingEditorTool = false;
         } else {
@@ -61,6 +69,24 @@ public class ClaimEditor implements Listener{
             renderer.show(player);
         } else {
             renderer.hide(player);
+        }
+    }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        if (event.getWhoClicked() instanceof Player player) {
+            if (!player.getUniqueId().equals(ownerID)) {
+                return;
+            }
+
+            if (event.getSlot() == player.getInventory().getHeldItemSlot()) {
+                InventoryAction action = event.getAction();
+                if (action == PLACE_ALL || action == PLACE_ONE || action == SWAP_WITH_CURSOR) {
+                    checkHeldItem(player, event.getCursor());
+                } else if (action == PICKUP_ALL) {
+                    checkHeldItem(player, null);
+                }
+            }
         }
     }
 
