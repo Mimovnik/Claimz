@@ -19,6 +19,7 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -151,13 +152,18 @@ public class ClaimEditor implements Listener {
         }
     }
 
+    private String formatLocation(Location location) {
+        Vector v = location.toVector();
+        return " x=" + v.getBlockX() + " y=" + v.getBlockY() + " z=" + v.getBlockZ();
+    }
+
     private void setupNewClaim(Player player, Block block) {
         if (firstVertex == null) {
             firstVertex = block.getLocation();
-            player.sendMessage("First vertex set to:" + block.getLocation());
+            player.sendMessage("First vertex set to:" + formatLocation(block.getLocation()));
         } else {
             secondVertex = block.getLocation();
-            player.sendMessage("Second vertex set to:" + block.getLocation());
+            player.sendMessage("Second vertex set to:" + formatLocation(block.getLocation()));
             Claim newClaim = new Claim(firstVertex, secondVertex, player.getWorld().getUID(), player.getUniqueId());
             for (Claim claim : claimContainer.getAllClaims()) {
                 if (newClaim.intersects(claim) && !claim.hasPermission(player)) {
