@@ -142,7 +142,7 @@ public class ClaimEditor implements Listener{
             if (playerCubes >= cost) {
                 factory.balanceCubes(player, playerCubes - cost);
             } else {
-                player.sendMessage(ChatColor.RED + "Cost: " + cost + " You cubes: " + playerCubes + " Need: " + (cost - playerCubes));
+                player.sendMessage(ChatColor.RED + "Cost: " + cost + " Your cubes: " + playerCubes + " Need: " + (cost - playerCubes));
                 return;
             }
 
