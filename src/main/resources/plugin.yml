@@ -26,3 +26,6 @@ commands:
   showTrusted:
     description: Lists trusted players of the claim the sender is currently standing in.
     usage: /<command>
+  claimzTips:
+    description: Show plugin tips.
+    usage: /<command>
